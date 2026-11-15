@@ -1,6 +1,6 @@
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
-import { categories, getFeaturedProducts } from "@/lib/products";
+import { getCategories, getFeaturedProducts } from "@/lib/products";
 import { site, whatsappLink } from "@/lib/site";
 
 const benefits = [
@@ -10,8 +10,8 @@ const benefits = [
   { title: "Asesoría", text: "Te ayudamos a elegir por WhatsApp" },
 ];
 
-export default function Home() {
-  const featured = getFeaturedProducts();
+export default async function Home() {
+  const [categories, featured] = await Promise.all([getCategories(), getFeaturedProducts()]);
 
   return (
     <>
@@ -61,14 +61,14 @@ export default function Home() {
       <section className="mx-auto max-w-6xl px-4 py-16">
         <h2 className="font-display text-2xl font-bold sm:text-3xl">Categorías</h2>
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {categories.map((c) => (
+          {categories.slice(0, 8).map((c) => (
             <Link
               key={c.slug}
               href={`/productos?categoria=${c.slug}`}
               className="group rounded-lg border border-border bg-surface p-6 transition hover:border-brand hover:bg-surface-2"
             >
               <h3 className="font-display text-lg group-hover:text-brand">{c.name}</h3>
-              <p className="mt-2 text-sm text-muted">{c.description}</p>
+              <p className="mt-2 text-sm text-muted">{c.count} {c.count === 1 ? "producto" : "productos"}</p>
             </Link>
           ))}
         </div>

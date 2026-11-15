@@ -1,11 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import logo from "../../public/brand/logo.webp";
-import { categories } from "@/lib/products";
+import { getCategories } from "@/lib/products";
 import { site } from "@/lib/site";
 import CurrentYear from "./CurrentYear";
 
-export default function Footer() {
+export default async function Footer() {
+  const categories = await getCategories();
+
   return (
     <footer className="mt-auto border-t border-border bg-surface">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
@@ -17,7 +19,7 @@ export default function Footer() {
         <div>
           <h3 className="font-display mb-3 text-sm text-brand">Categorías</h3>
           <ul className="space-y-2 text-sm text-muted">
-            {categories.map((c) => (
+            {categories.slice(0, 6).map((c) => (
               <li key={c.slug}>
                 <Link href={`/productos?categoria=${c.slug}`} className="hover:text-foreground">
                   {c.name}

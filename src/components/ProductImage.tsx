@@ -1,5 +1,23 @@
-// Imagen provisional mientras no hay fotos reales de los productos.
-export default function ProductImage({ name, className = "" }: { name: string; className?: string }) {
+import Image from "next/image";
+
+type Props = {
+  name: string;
+  src?: string;
+  className?: string;
+  sizes?: string;
+  priority?: boolean;
+};
+
+// Muestra la foto del producto; si aún no tiene, un dibujo provisional.
+export default function ProductImage({ name, src, className = "", sizes = "(max-width: 1024px) 50vw, 25vw", priority }: Props) {
+  if (src) {
+    return (
+      <div className={`relative aspect-square w-full overflow-hidden bg-white ${className}`}>
+        <Image src={src} alt={name} fill sizes={sizes} className="object-contain" priority={priority} />
+      </div>
+    );
+  }
+
   return (
     <div
       className={`flex aspect-square w-full items-center justify-center bg-gradient-to-br from-surface-2 to-black ${className}`}
