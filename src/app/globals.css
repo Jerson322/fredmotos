@@ -1,35 +1,68 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
-  --surface: #141414;
-  --surface-2: #1d1d1d;
-  --border: #2a2a2a;
-  --foreground: #f5f5f5;
-  --muted: #a3a3a3;
-  --brand: #e10600;
-  --brand-dark: #b00500;
+  --ink: #0e0e0e;        /* negro de encabezado, portada y pie */
+  --ink-soft: #1a1a1a;
+  --paper: #f3f2ef;      /* fondo claro del catálogo */
+  --card: #ffffff;
+  --line: #dcdad4;
+  --fg: #141414;
+  --mute: #6b6a66;
+  --brand: #e30613;      /* rojo Fredmotos */
+  --brand-dark: #b8050f;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-border: var(--border);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-mute: var(--mute);
   --color-brand: var(--brand);
   --color-brand-dark: var(--brand-dark);
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-oswald);
+  --font-sans: var(--font-archivo);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--paper);
+  color: var(--fg);
 }
 
-.font-display {
-  letter-spacing: 0.02em;
+/* Títulos: Archivo ancha y pesada */
+@utility font-display {
+  font-family: var(--font-archivo), sans-serif;
+  font-stretch: 125%;
+  font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+/* Etiquetas pequeñas en mayúsculas */
+@utility label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+/* Corte diagonal en el borde derecho (botones, etiquetas) */
+@utility cut-r {
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+}
+
+/* Texto solo contorno */
+@utility text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.14);
+}
+
+/* Franjas diagonales tipo carenado */
+@utility stripes {
+  background-image: repeating-linear-gradient(
+    -60deg,
+    var(--brand) 0 14px,
+    transparent 14px 30px
+  );
 }

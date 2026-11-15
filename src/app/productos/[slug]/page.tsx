@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CardIcon, ChatIcon, ShieldIcon, TruckIcon } from "@/components/Icons";
 import ProductImage from "@/components/ProductImage";
 import { getPrebuiltSlugs, getProduct } from "@/lib/products";
 import { formatPrice, whatsappLink } from "@/lib/site";
@@ -17,7 +18,7 @@ export async function generateMetadata(props: PageProps<"/productos/[slug]">): P
   if (!product) return {};
   return {
     title: product.name,
-    description: product.description,
+    description: product.description || `${product.name} en Fredmotos. ${formatPrice(product.price)}.`,
     openGraph: product.images[0] ? { images: [product.images[0]] } : undefined,
   };
 }
@@ -29,64 +30,68 @@ export default async function ProductPage(props: PageProps<"/productos/[slug]">)
 
   const { category } = product;
   const outOfStock = product.stock <= 0;
+  const discount = product.compareAtPrice ? Math.round((1 - product.price / product.compareAtPrice) * 100) : 0;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <nav className="text-sm text-muted">
-        <Link href="/productos" className="hover:text-foreground">Tienda</Link>
-        {" / "}
-        <Link href={`/productos?categoria=${category.slug}`} className="hover:text-foreground">
-          {category.name}
-        </Link>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12">
+      <nav className="label flex flex-wrap gap-2 text-mute" aria-label="Ruta">
+        <Link href="/" className="hover:text-fg">Inicio</Link>/
+        <Link href="/productos" className="hover:text-fg">Tienda</Link>/
+        <Link href={`/productos?categoria=${category.slug}`} className="hover:text-fg">{category.name}</Link>
       </nav>
 
-      <div className="mt-6 grid gap-10 md:grid-cols-2">
+      <div className="mt-6 grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
+        {/* Fotos */}
         <div className="space-y-3">
-          <ProductImage
-            name={product.name}
-            src={product.images[0]}
-            className="rounded-lg border border-border"
-            sizes="(max-width: 768px) 100vw, 50vw"
-            priority
-          />
+          <div className="relative border border-line bg-white">
+            <ProductImage name={product.name} src={product.images[0]} sizes="(max-width: 1024px) 100vw, 55vw" priority />
+            {discount > 0 && (
+              <span className="cut-r absolute left-0 top-4 bg-brand py-1.5 pl-4 pr-6 text-sm font-bold text-white">
+                -{discount}%
+              </span>
+            )}
+          </div>
           {product.images.length > 1 && (
             <div className="grid grid-cols-4 gap-3">
               {product.images.slice(1).map((src) => (
-                <ProductImage
-                  key={src}
-                  name={product.name}
-                  src={src}
-                  className="rounded border border-border"
-                  sizes="15vw"
-                />
+                <div key={src} className="border border-line bg-white">
+                  <ProductImage name={product.name} src={src} sizes="15vw" />
+                </div>
               ))}
             </div>
           )}
         </div>
 
+        {/* Compra */}
         <div>
-          {product.brand && <p className="text-sm uppercase tracking-wide text-muted">{product.brand}</p>}
-          <h1 className="font-display text-3xl font-bold sm:text-4xl">{product.name}</h1>
-          <p className="mt-1 text-xs text-muted">Código: {product.code}</p>
-          <div className="mt-4 flex flex-wrap items-baseline gap-x-3">
-            <span className="text-3xl font-bold text-brand">{formatPrice(product.price)}</span>
-            {product.compareAtPrice && (
-              <span className="text-lg text-muted line-through">{formatPrice(product.compareAtPrice)}</span>
-            )}
-          </div>
-          <p className={`mt-2 text-sm ${outOfStock ? "text-muted" : "text-green-500"}`}>
-            {outOfStock ? "Agotado por ahora" : `Disponible · ${product.stock} en stock`}
+          {product.brand && <p className="label text-brand">{product.brand}</p>}
+          <h1 className="font-display mt-2 text-3xl leading-[1.02] sm:text-4xl">{product.name}</h1>
+          <p className="mt-3 text-sm text-mute">
+            Código {product.code} · {product.presentation.toLowerCase()}
           </p>
 
-          {product.description && (
-            <p className="mt-6 whitespace-pre-line leading-relaxed text-muted">{product.description}</p>
-          )}
+          <div className="mt-6 border-y border-line py-6">
+            {product.compareAtPrice && (
+              <p className="text-mute">
+                Antes <span className="line-through">{formatPrice(product.compareAtPrice)}</span>
+              </p>
+            )}
+            <p className="text-4xl font-extrabold tracking-tight">{formatPrice(product.price)}</p>
+            <p className="mt-3 flex items-center gap-2 text-sm font-semibold">
+              <span className={`h-2.5 w-2.5 ${outOfStock ? "bg-mute" : product.stock <= 3 ? "bg-brand" : "bg-[#1f9d55]"}`} />
+              {outOfStock
+                ? "Agotado por ahora"
+                : product.stock <= 3
+                  ? `¡Quedan solo ${product.stock}!`
+                  : "Disponible para entrega"}
+            </p>
+          </div>
 
           {/* El carrito se conecta en la fase 3 */}
           <button
             type="button"
             disabled={outOfStock}
-            className="mt-8 w-full rounded-md bg-brand px-6 py-3 font-semibold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-neutral-700"
+            className="mt-6 h-14 w-full bg-brand font-bold uppercase tracking-wide text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-mute"
           >
             {outOfStock ? "Agotado" : "Agregar al carrito"}
           </button>
@@ -94,10 +99,24 @@ export default async function ProductPage(props: PageProps<"/productos/[slug]">)
             href={whatsappLink(`Hola, me interesa: ${product.name} (código ${product.code})`)}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 block w-full rounded-md border border-border px-6 py-3 text-center font-semibold transition hover:border-foreground"
+            className="mt-3 flex h-14 w-full items-center justify-center gap-2 border-2 border-fg font-bold uppercase tracking-wide transition hover:bg-fg hover:text-white"
           >
-            Consultar por WhatsApp
+            <ChatIcon />
+            ¿Le sirve a mi moto? Pregúntanos
           </a>
+
+          <ul className="mt-8 space-y-3 text-sm">
+            <li className="flex items-center gap-3"><TruckIcon className="h-5 w-5 text-brand" /> Despachos a tu ciudad</li>
+            <li className="flex items-center gap-3"><CardIcon className="h-5 w-5 text-brand" /> Paga con PSE, tarjeta o Nequi</li>
+            <li className="flex items-center gap-3"><ShieldIcon className="h-5 w-5 text-brand" /> Producto con garantía</li>
+          </ul>
+
+          {product.description && (
+            <div className="mt-8 border-t border-line pt-6">
+              <h2 className="label text-mute">Descripción</h2>
+              <p className="mt-3 whitespace-pre-line leading-relaxed">{product.description}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

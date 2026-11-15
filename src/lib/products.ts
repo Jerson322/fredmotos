@@ -50,8 +50,15 @@ export function slugify(text: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+// "ACEITE 4T 20W-50 1L" → "Aceite 4T 20W-50 1L": las palabras con números (referencias,
+// medidas, cilindrajes) se dejan en mayúsculas.
 function titleCase(text: string) {
-  return text.toLowerCase().replace(/(^|\s)\S/g, (c) => c.toUpperCase());
+  return text
+    .split(/(\s+)/)
+    .map((word) =>
+      /\d/.test(word) ? word.toUpperCase() : word.toLowerCase().replace(/^\p{L}/u, (c) => c.toUpperCase()),
+    )
+    .join("");
 }
 
 async function fetchExtras(): Promise<Map<string, ProductExtra>> {

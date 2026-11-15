@@ -1,38 +1,48 @@
 import type { Metadata } from "next";
+import { ChatIcon } from "@/components/Icons";
 import { site, whatsappLink } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Contacto" };
 
 export default function ContactPage() {
   const items = [
-    { label: "Teléfono", value: site.phone },
+    { label: "WhatsApp / Teléfono", value: site.phone },
     { label: "Correo", value: site.email },
     { label: "Dirección", value: site.address },
     { label: "Horario", value: site.hours },
   ];
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-16">
-      <h1 className="font-display text-3xl font-bold sm:text-4xl">Contacto</h1>
-      <p className="mt-2 text-muted">¿Tienes dudas sobre un producto o tu pedido? Escríbenos.</p>
+    <>
+      <section className="bg-ink text-white">
+        <div className="mx-auto max-w-7xl px-4 py-16">
+          <p className="label text-brand">Contacto</p>
+          <h1 className="font-display mt-3 text-4xl sm:text-6xl">Hablemos</h1>
+          <p className="mt-4 max-w-xl text-white/65">
+            ¿Dudas con una referencia o con tu pedido? La forma más rápida es WhatsApp.
+          </p>
+          <a
+            href={whatsappLink("Hola Fredmotos, tengo una consulta.")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-8 inline-flex items-center gap-2 bg-brand px-7 py-4 font-bold uppercase tracking-wide text-white hover:bg-brand-dark"
+          >
+            <ChatIcon />
+            Escribir por WhatsApp
+          </a>
+        </div>
+      </section>
 
-      <dl className="mt-8 grid gap-4 sm:grid-cols-2">
-        {items.map((i) => (
-          <div key={i.label} className="rounded-lg border border-border bg-surface p-5">
-            <dt className="font-display text-sm text-brand">{i.label}</dt>
-            <dd className="mt-1">{i.value}</dd>
-          </div>
-        ))}
-      </dl>
-
-      <a
-        href={whatsappLink("Hola Fredmotos, tengo una consulta.")}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-8 inline-block rounded-md bg-[#25D366] px-6 py-3 font-semibold text-white transition hover:opacity-90"
-      >
-        Escribir por WhatsApp
-      </a>
-    </div>
+      <section className="mx-auto max-w-7xl px-4 py-14">
+        <dl className="grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-4">
+          {items.map((i) => (
+            <div key={i.label} className="bg-card p-6">
+              <dt className="label text-brand">{i.label}</dt>
+              <dd className="mt-2 font-semibold">{i.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    </>
   );
 }

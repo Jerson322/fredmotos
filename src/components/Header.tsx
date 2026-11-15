@@ -1,54 +1,96 @@
 import Image from "next/image";
 import Link from "next/link";
-import logo from "../../public/brand/logo.webp";
+import logo from "../../public/brand/logo-horizontal.webp";
+import { getCategories } from "@/lib/products";
+import { site, whatsappLink } from "@/lib/site";
+import { CartIcon, ChatIcon, SearchIcon } from "./Icons";
 
-const links = [
-  { href: "/", label: "Inicio" },
-  { href: "/productos", label: "Tienda" },
-  { href: "/nosotros", label: "Nosotros" },
-  { href: "/contacto", label: "Contacto" },
-];
-
-export default function Header() {
+function SearchForm({ className = "" }: { className?: string }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="flex items-center" aria-label="Fredmotos, ir al inicio">
-          <Image src={logo} alt="Fredmotos" className="h-11 w-auto" priority />
-        </Link>
+    <form action="/productos" role="search" className={`flex ${className}`}>
+      <label htmlFor="buscar-header" className="sr-only">Buscar productos</label>
+      <input
+        id="buscar-header"
+        type="search"
+        name="q"
+        placeholder="Busca por nombre, referencia o código"
+        className="h-11 w-full min-w-0 bg-white px-4 text-sm text-fg outline-none placeholder:text-mute"
+      />
+      <button className="flex h-11 w-12 shrink-0 items-center justify-center bg-brand text-white hover:bg-brand-dark" aria-label="Buscar">
+        <SearchIcon />
+      </button>
+    </form>
+  );
+}
 
-        <nav className="hidden items-center gap-8 md:flex">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="font-display text-sm text-muted transition hover:text-foreground"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </nav>
+export default async function Header() {
+  const categories = (await getCategories()).slice(0, 8);
 
-        {/* El carrito se conecta en la fase 3 */}
-        <Link
-          href="/carrito"
-          className="flex items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark"
-        >
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="9" cy="21" r="1" />
-            <circle cx="20" cy="21" r="1" />
-            <path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6" />
-          </svg>
-          Carrito
-        </Link>
+  return (
+    <header>
+      {/* Franja superior */}
+      <div className="bg-brand text-white">
+        <div className="mx-auto flex h-8 max-w-7xl items-center justify-between px-4 text-xs font-semibold">
+          <span>Compra en línea · Pago seguro con PSE, tarjeta y Nequi</span>
+          <span className="hidden sm:block">{site.hours}</span>
+        </div>
       </div>
 
-      <nav className="flex justify-around border-t border-border py-2 md:hidden">
-        {links.map((l) => (
-          <Link key={l.href} href={l.href} className="font-display text-xs text-muted hover:text-foreground">
-            {l.label}
+      {/* Barra principal */}
+      <div className="bg-ink text-white">
+        <div className="mx-auto flex h-20 max-w-7xl items-center gap-6 px-4">
+          <Link href="/" className="shrink-0" aria-label="Fredmotos, ir al inicio">
+            <Image src={logo} alt="Fredmotos" className="h-10 w-auto sm:h-12" priority />
           </Link>
-        ))}
+
+          <SearchForm className="hidden flex-1 md:flex lg:max-w-2xl" />
+
+          <div className="ml-auto flex items-center gap-1 sm:gap-4">
+            <a
+              href={whatsappLink("Hola Fredmotos, necesito asesoría.")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-2 py-2 text-sm hover:text-brand"
+            >
+              <ChatIcon />
+              <span className="hidden leading-tight lg:block">
+                <span className="block text-[11px] text-white/50">¿Dudas?</span>
+                Asesoría
+              </span>
+            </a>
+            <Link href="/carrito" className="flex items-center gap-2 px-2 py-2 text-sm hover:text-brand">
+              <CartIcon />
+              <span className="hidden leading-tight lg:block">
+                <span className="block text-[11px] text-white/50">Tu compra</span>
+                Carrito
+              </span>
+            </Link>
+          </div>
+        </div>
+        <div className="px-4 pb-3 md:hidden">
+          <SearchForm />
+        </div>
+      </div>
+
+      {/* Categorías */}
+      <nav className="border-b-4 border-brand bg-ink-soft text-white" aria-label="Categorías">
+        <div className="mx-auto flex max-w-7xl overflow-x-auto px-4 [scrollbar-width:none]">
+          <Link href="/productos" className="label shrink-0 bg-brand px-4 py-3.5 text-white">
+            Toda la tienda
+          </Link>
+          {categories.map((c) => (
+            <Link
+              key={c.slug}
+              href={`/productos?categoria=${c.slug}`}
+              className="label shrink-0 px-4 py-3.5 text-white/75 transition hover:bg-white/5 hover:text-white"
+            >
+              {c.name}
+            </Link>
+          ))}
+          <Link href="/contacto" className="label ml-auto shrink-0 px-4 py-3.5 text-white/75 hover:text-white">
+            Contacto
+          </Link>
+        </div>
       </nav>
     </header>
   );
