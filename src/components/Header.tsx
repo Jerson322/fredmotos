@@ -27,7 +27,8 @@ export default async function Header() {
   const categories = (await getCategories()).slice(0, 8);
 
   return (
-    <header>
+    // En escritorio queda pegado arriba: la franja roja (2rem) se va y la barra negra se queda.
+    <header className="z-40 md:sticky md:-top-8">
       {/* Franja superior */}
       <div className="bg-brand text-white">
         <div className="mx-auto flex h-8 max-w-7xl items-center justify-between px-4 text-xs font-semibold">

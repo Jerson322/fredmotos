@@ -54,7 +54,7 @@ body {
 
 /* Texto solo contorno */
 @utility text-outline {
-  color: transparent;
+  -webkit-text-fill-color: transparent;
   -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.14);
 }
 
@@ -65,4 +65,82 @@ body {
     var(--brand) 0 14px,
     transparent 14px 30px
   );
+}
+
+/* Título con "eco": copia en contorno desplazada detrás del texto (estilo Shaft).
+   Uso: <h2 class="echo" data-echo="Texto">Texto</h2> */
+@utility echo {
+  position: relative;
+  isolation: isolate;
+  &::after {
+    content: attr(data-echo);
+    position: absolute;
+    inset: 0;
+    transform: translate(0.05em, 0.09em);
+    /* fill transparente (no color) para que currentColor siga siendo el del título */
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1.5px currentColor;
+    opacity: 0.35;
+    z-index: -1;
+    pointer-events: none;
+  }
+}
+
+/* Textura de grano sobre fondos oscuros (quita el aspecto plano/digital) */
+@utility grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Cinta de texto en movimiento */
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@utility animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+
+/* Aparece al entrar en pantalla (solo navegadores con scroll-driven animations) */
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
+
+/* Carruseles: sin barra de scroll visible */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Barra de progreso del carrusel de portada */
+@keyframes progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }

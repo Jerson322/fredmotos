@@ -137,14 +137,24 @@ export async function getCategories() {
 
 export const PAGE_SIZE = 24;
 
-export async function getProducts(opts: { category?: string; query?: string; page?: number } = {}) {
+export type ProductFilters = {
+  category?: string;
+  query?: string;
+  page?: number;
+  maxPrice?: number; // "Por menos de $50.000"
+  onSale?: boolean; // solo productos con precio anterior (oferta)
+};
+
+export async function getProducts(opts: ProductFilters = {}) {
   const { products } = await getCatalog();
   const q = opts.query ? slugify(opts.query) : "";
 
   const filtered = products.filter(
     (p) =>
       (!opts.category || p.category.slug === opts.category) &&
-      (!q || slugify(`${p.name} ${p.brand ?? ""} ${p.code}`).includes(q)),
+      (!q || slugify(`${p.name} ${p.brand ?? ""} ${p.code} ${p.category.name}`).includes(q)) &&
+      (!opts.maxPrice || p.price <= opts.maxPrice) &&
+      (!opts.onSale || p.compareAtPrice !== null),
   );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -166,6 +176,15 @@ export async function getFeaturedProducts(limit = 8) {
     .filter((p) => !p.featured)
     .sort((a, b) => b.images.length - a.images.length || b.stock - a.stock);
   return [...featured, ...rest].slice(0, limit);
+}
+
+/** Productos de una categoría para las vitrinas de la portada. */
+export async function getCategoryShelf(categorySlug: string, limit = 12) {
+  const { products } = await getCatalog();
+  return products
+    .filter((p) => p.category.slug === categorySlug)
+    .sort((a, b) => b.images.length - a.images.length || b.stock - a.stock)
+    .slice(0, limit);
 }
 
 export async function getProduct(slug: string) {

@@ -6,7 +6,12 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import "./globals.css";
 
 // Archivo variable con eje de ancho: normal para texto, expandida para títulos.
-const archivo = Archivo({ variable: "--font-archivo", subsets: ["latin"], axes: ["wdth"] });
+const archivo = Archivo({
+  variable: "--font-archivo",
+  subsets: ["latin"],
+  axes: ["wdth"],
+  style: ["normal", "italic"],
+});
 
 export const metadata: Metadata = {
   title: {
