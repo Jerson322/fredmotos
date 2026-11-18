@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Archivo } from "next/font/google";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import "./globals.css";
@@ -23,9 +22,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${archivo.variable} h-full antialiased`}>
+    <html lang="es" data-scroll-behavior="smooth" className={`${archivo.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
-        <Header />
         <main className="flex-1">{children}</main>
         <Footer />
         <WhatsAppButton />

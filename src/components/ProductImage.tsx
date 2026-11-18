@@ -13,7 +13,10 @@ export default function ProductImage({ name, src, className = "", sizes = "(max-
   if (src) {
     return (
       <div className={`relative aspect-square w-full overflow-hidden bg-white ${className}`}>
-        <Image src={src} alt={name} fill sizes={sizes} className="object-contain p-4" priority={priority} />
+        <Image src={src} alt={name} fill sizes={sizes} className="object-contain p-4"
+          loading={priority ? "eager" : undefined}
+          fetchPriority={priority ? "high" : undefined}
+        />
       </div>
     );
   }

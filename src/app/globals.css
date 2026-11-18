@@ -144,3 +144,10 @@ body {
     transform: scaleX(1);
   }
 }
+
+/* Desplazamiento suave al ir a un ancla (ej. #distribuidores) */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
