@@ -38,7 +38,7 @@ export default function Home() {
         </div>
 
         {/* Casco 3D al centro */}
-        <div className="relative z-10 mx-auto my-auto aspect-square w-full max-w-[min(90vw,72svh)] cursor-grab active:cursor-grabbing">
+        <div className="relative z-10 mx-auto my-auto translate-y-[7svh] aspect-square w-full max-w-[min(90vw,72svh)] cursor-grab active:cursor-grabbing">
           <HelmetViewer src={HELMET.model} alt={`Casco ${HELMET.brand} ${HELMET.name} en 3D`} />
         </div>
 
