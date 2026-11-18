@@ -31,7 +31,7 @@ export default function HelmetViewer({ src, alt }: { src: string; alt: string })
         })}
       {!ready && (
         <div className="absolute inset-0 grid place-items-center">
-          <span className="h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-brand" />
+          <span className="h-10 w-10 animate-spin rounded-full border-2 border-fg/15 border-t-brand" />
         </div>
       )}
     </div>

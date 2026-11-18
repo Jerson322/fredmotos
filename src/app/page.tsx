@@ -10,14 +10,14 @@ export default function Home() {
   return (
     <>
       {/* Portada */}
-      <section className="grain relative flex min-h-svh flex-col overflow-hidden bg-ink text-white">
+      <section className="relative flex min-h-svh flex-col overflow-hidden bg-white text-fg">
         {/* Barra transparente: logo al centro, botón de distribuidor en la esquina */}
         <div className="absolute inset-x-0 top-0 z-20 grid grid-cols-[1fr_auto_1fr] items-center px-4 py-5 sm:px-8">
           <span />
-          <Image src={logo} alt="Fredmotos" className="h-10 w-auto sm:h-14" loading="eager" />
+          <Image src={logo} alt="Fredmotos" className="h-10 w-auto brightness-0 sm:h-14" loading="eager" />
           <a
             href="#distribuidores"
-            className="justify-self-end border border-white/30 px-3 py-2 text-[11px] font-bold uppercase tracking-wider backdrop-blur-sm transition hover:border-brand hover:bg-brand sm:px-5 sm:py-2.5 sm:text-xs"
+            className="justify-self-end border border-fg px-3 py-2 text-[11px] font-bold uppercase tracking-wider transition hover:border-brand hover:bg-brand hover:text-white sm:px-5 sm:py-2.5 sm:text-xs"
           >
             <span className="sm:hidden">¿Distribuidor?</span>
             <span className="hidden sm:inline">¿Quieres ser distribuidor?</span>
@@ -29,11 +29,15 @@ export default function Home() {
           className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center select-none"
           aria-hidden="true"
         >
-          <span className="font-display whitespace-nowrap text-[17vw] italic leading-[0.85] text-white/[0.07] sm:text-[14vw]">
+          <span className="font-display text-shine whitespace-nowrap text-[17vw] italic leading-[0.85] sm:text-[14vw]">
             {HELMET.brand}
           </span>
-          <span className="font-display text-outline whitespace-nowrap text-[11vw] italic leading-[0.9] [-webkit-text-stroke-color:rgba(227,6,19,0.55)] sm:text-[10vw]">
-            {HELMET.name}
+          <span className="font-display whitespace-nowrap text-[11vw] italic leading-[0.9] sm:text-[10vw]">
+            {[...HELMET.name].map((ch, i) => (
+              <span key={i} className="glow-letter" style={{ "--i": i } as React.CSSProperties}>
+                {ch === " " ? " " : ch}
+              </span>
+            ))}
           </span>
         </div>
 
@@ -43,7 +47,7 @@ export default function Home() {
         </div>
 
         <h1 className="relative z-10 pb-8 text-center">
-          <span className="label block text-white/45">Arrastra para girarlo</span>
+          <span className="label block text-mute">Arrastra para girarlo</span>
           <span className="font-display mt-2 block text-xl italic sm:text-2xl">
             {HELMET.brand} <span className="text-brand">{HELMET.name}</span>
           </span>
