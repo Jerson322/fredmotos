@@ -224,26 +224,12 @@ body {
   }
 }
 
-/* Portada con scroll (ScrollStage publica --p de 0 a 1) */
+/* Portada con scroll (VenomShowcase publica --h: 0 = portada, 1 = producto a la izquierda) */
 .stage-helmet {
-  transform: translateY(calc(var(--p) * -24svh)) scale(calc(1 - var(--p) * 0.35));
-}
-.stage-fade {
-  opacity: calc(1 - var(--p) * 3);
-}
-.stage-panel {
-  opacity: calc((var(--p) - 0.45) * 3);
-  transform: translateY(max(0px, calc((0.8 - var(--p)) * 12svh)));
-  pointer-events: none;
-}
-[data-end] .stage-panel {
-  pointer-events: auto;
+  transform: translateY(calc(var(--h) * -24svh)) scale(calc(1 - var(--h) * 0.35));
 }
 @media (min-width: 1024px) {
   .stage-helmet {
-    transform: translateX(calc(var(--p) * -24vw)) scale(calc(1 - var(--p) * 0.12));
-  }
-  .stage-panel {
-    transform: translateX(max(0px, calc((0.8 - var(--p)) * 14vw)));
+    transform: translateX(calc(var(--h) * -24vw)) scale(calc(1 - var(--h) * 0.12));
   }
 }
