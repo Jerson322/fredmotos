@@ -11,6 +11,14 @@ export default function Home() {
     <>
       {/* Portada */}
       <section className="relative flex min-h-svh flex-col overflow-hidden bg-white text-fg">
+        {/* Fondo difuminado blanco, rojo y negro */}
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <div className="blob absolute -right-[12vw] -top-[18vw] h-[55vw] w-[55vw] rounded-full bg-brand opacity-55 blur-[110px]" />
+          <div className="blob blob-slow absolute -bottom-[22vw] -left-[14vw] h-[55vw] w-[55vw] rounded-full bg-ink opacity-60 blur-[120px]" />
+          <div className="blob absolute -bottom-[16vw] right-[8vw] h-[34vw] w-[34vw] rounded-full bg-brand opacity-40 blur-[100px]" />
+          <div className="blob blob-slow absolute -left-[8vw] top-[10vh] h-[26vw] w-[26vw] rounded-full bg-brand opacity-25 blur-[90px]" />
+        </div>
+
         {/* Barra transparente: logo al centro, botón de distribuidor en la esquina */}
         <div className="absolute inset-x-0 top-0 z-20 grid grid-cols-[1fr_auto_1fr] items-center px-4 py-5 sm:px-8">
           <span />
