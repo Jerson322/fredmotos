@@ -23,12 +23,16 @@ export default function HelmetViewer({ src, alt }: { src: string; alt: string })
           "camera-controls": "",
           "disable-zoom": "",
           "disable-pan": "",
+          "touch-action": "pan-y", // en celular: arrastrar de lado gira, arrastrar vertical hace scroll
           "interaction-prompt": "none",
           "shadow-intensity": "1",
           exposure: "1",
           "environment-image": "neutral",
           style: { width: "100%", height: "100%", background: "transparent", "--poster-color": "transparent" },
-        })}
+        },
+        // Oculta la barra de carga gris que trae model-viewer por defecto
+        createElement("div", { slot: "progress-bar" }),
+        )}
       {!ready && (
         <div className="absolute inset-0 grid place-items-center">
           <span className="h-10 w-10 animate-spin rounded-full border-2 border-fg/15 border-t-brand" />

@@ -223,3 +223,27 @@ body {
     animation-direction: alternate-reverse;
   }
 }
+
+/* Portada con scroll (ScrollStage publica --p de 0 a 1) */
+.stage-helmet {
+  transform: translateY(calc(var(--p) * -24svh)) scale(calc(1 - var(--p) * 0.35));
+}
+.stage-fade {
+  opacity: calc(1 - var(--p) * 3);
+}
+.stage-panel {
+  opacity: calc((var(--p) - 0.45) * 3);
+  transform: translateY(max(0px, calc((0.8 - var(--p)) * 12svh)));
+  pointer-events: none;
+}
+[data-end] .stage-panel {
+  pointer-events: auto;
+}
+@media (min-width: 1024px) {
+  .stage-helmet {
+    transform: translateX(calc(var(--p) * -24vw)) scale(calc(1 - var(--p) * 0.12));
+  }
+  .stage-panel {
+    transform: translateX(max(0px, calc((0.8 - var(--p)) * 14vw)));
+  }
+}
