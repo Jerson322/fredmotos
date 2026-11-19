@@ -1,5 +1,5 @@
 import Image from "next/image";
-import VenomShowcase, { type Media, type Panel } from "@/components/VenomShowcase";
+import ProductShowcase, { type Media, type Panel } from "@/components/ProductShowcase";
 import { whatsappLink } from "@/lib/site";
 import logo from "../../public/brand/logo-horizontal.webp";
 
@@ -76,7 +76,7 @@ export default function Home() {
   return (
     <>
       <h1 className="sr-only">Fredmotos: cascos, chaquetas, guantes e impermeables para moto</h1>
-      <VenomShowcase media={media} panels={panels} hero={{ brand: "HJC RPHA", name: "Funky Diablo" }} anchorId="distribuidores">
+      <ProductShowcase media={media} panels={panels} hero={{ brand: "HJC RPHA", name: "Funky Diablo" }} anchorId="distribuidores">
         {/* Barra transparente: logo al centro, botón de distribuidor en la esquina */}
         <div className="absolute inset-x-0 top-0 z-30 grid grid-cols-[1fr_auto_1fr] items-center px-4 py-5 sm:px-8">
           <span />
@@ -89,7 +89,7 @@ export default function Home() {
             <span className="hidden sm:inline">¿Quieres ser distribuidor?</span>
           </a>
         </div>
-      </VenomShowcase>
+      </ProductShowcase>
     </>
   );
 }

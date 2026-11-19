@@ -1,0 +1,279 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useRef } from "react";
+import HelmetViewer from "./HelmetViewer";
+
+// =====================================================================
+// Vitrina con scroll (estilo Shaft): la pantalla queda fija y, a medida
+// que se baja, la imagen se transforma en la siguiente (casco → chaqueta →
+// guantes → impermeable) y cambia la información de la categoría.
+// Solo se recalcula al hacer scroll, y solo con transform/opacity/clip-path
+// para que vaya fluido.
+// =====================================================================
+
+export type Media =
+  | { kind: "model"; src: string; alt: string } // .glb (casco 3D)
+  | { kind: "image"; src: string; alt: string } // PNG sin fondo
+  | { kind: "placeholder"; shape: "jacket" | "glove" | "raincoat"; alt: string };
+
+export type Panel = {
+  media: number; // índice en `media`
+  kicker: string;
+  title: string;
+  highlight: string; // parte del título en rojo
+  text: string;
+  cta: string;
+  href: string;
+  external?: boolean;
+  word: string; // palabra gigante de fondo
+};
+
+type Props = {
+  media: Media[];
+  panels: Panel[];
+  hero: { brand: string; name: string };
+  anchorId?: string; // ancla al último panel (distribuidores)
+  children?: React.ReactNode; // barra superior (logo + botón)
+};
+
+const STAGE_SVH = 90; // scroll que dura cada etapa
+const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const smooth = (x: number) => {
+  x = clamp(x);
+  return x * x * (3 - 2 * x);
+};
+
+export default function ProductShowcase({ media, panels, hero, anchorId, children }: Props) {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const mediaRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  const N = panels.length; // etapas: 0 = portada, 1..N = paneles
+
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const mediaAt = (k: number) => panels[clamp(k, 1, N) - 1].media;
+    let raf = 0;
+    let lastActive = -1;
+
+    const update = () => {
+      raf = 0;
+      const rect = stage.getBoundingClientRect();
+      const total = stage.offsetHeight - window.innerHeight;
+      const T = clamp(-rect.top / (total || 1)) * N;
+      const k = Math.min(Math.floor(T), N);
+      const x = smooth((T - k - 0.15) / 0.7); // 0→1 dentro de cada tramo, con pausa en los extremos
+      const s = k + x;
+
+      stage.style.setProperty("--h", clamp(s).toFixed(4));
+      if (heroRef.current) heroRef.current.style.opacity = String(clamp(1 - s * 3));
+
+      // Transformación de la imagen: la actual se encoge y se va, la siguiente crece desde el centro
+      const from = mediaAt(k);
+      const to = mediaAt(k + 1);
+      media.forEach((_, i) => {
+        const el = mediaRefs.current[i];
+        if (!el) return;
+        let o = 0;
+        let scale = 1;
+        let rot = 0;
+        let clip = 100;
+        if (from === to || k >= N) {
+          o = i === from ? 1 : 0;
+        } else if (i === from) {
+          o = 1 - smooth((x - 0.35) / 0.5);
+          scale = 1 - x * 0.25;
+          rot = x * -12;
+        } else if (i === to) {
+          o = smooth(x / 0.5);
+          scale = 0.75 + x * 0.25;
+          rot = (1 - x) * 12;
+          clip = 8 + x * 92;
+        }
+        el.style.opacity = o.toFixed(3);
+        el.style.transform = `scale(${scale.toFixed(3)}) rotate(${rot.toFixed(2)}deg)`;
+        el.style.clipPath = clip >= 100 ? "none" : `circle(${(clip * 0.75).toFixed(1)}% at 50% 50%)`;
+        el.style.visibility = o > 0.001 ? "visible" : "hidden";
+      });
+      const active = x < 0.5 || k >= N ? from : to;
+      if (active !== lastActive) {
+        lastActive = active;
+        mediaRefs.current.forEach((el, i) => el?.setAttribute("aria-hidden", String(i !== active)));
+      }
+
+      // Paneles de info y palabra de fondo
+      panels.forEach((_, j) => {
+        const d = s - (j + 1);
+        const o = clamp(1 - Math.abs(d) * 2.4);
+        const panel = panelRefs.current[j];
+        if (panel) {
+          panel.style.opacity = o.toFixed(3);
+          panel.style.transform = `translateY(${(-d * 40).toFixed(1)}px)`;
+          panel.style.visibility = o > 0.001 ? "visible" : "hidden";
+          panel.style.pointerEvents = o > 0.6 ? "auto" : "none";
+        }
+        const word = wordRefs.current[j];
+        if (word) {
+          word.style.opacity = (o * 0.9).toFixed(3);
+          word.style.transform = `translateX(${(-d * 12).toFixed(1)}vw)`;
+        }
+      });
+
+      // El casco también gira con el scroll
+      stage.querySelector("model-viewer")?.setAttribute("orientation", `0deg 0deg ${(s * 120).toFixed(1)}deg`);
+    };
+
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [N, media, panels]);
+
+  return (
+    <div
+      ref={stageRef}
+      className="relative"
+      style={{ height: `calc(${N * STAGE_SVH}svh + 100svh)`, "--h": 0 } as React.CSSProperties}
+    >
+      <div className="showcase-bg sticky top-0 h-svh overflow-hidden text-fg">
+        {/* Palabras gigantes de fondo por categoría */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center select-none" aria-hidden="true">
+          {panels.map((panel, j) => (
+            <span
+              key={panel.word}
+              ref={(el) => {
+                wordRefs.current[j] = el;
+              }}
+              className="font-display absolute whitespace-nowrap text-[18vw] italic leading-none text-white/70 opacity-0"
+            >
+              {panel.word}
+            </span>
+          ))}
+        </div>
+
+        {/* Nombre del casco (solo en la portada) */}
+        <div
+          ref={heroRef}
+          className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center select-none"
+          aria-hidden="true"
+        >
+          <span className="font-display text-shine whitespace-nowrap text-[17vw] italic leading-[0.85] sm:text-[14vw]">
+            {hero.brand}
+          </span>
+          <span className="font-display whitespace-nowrap text-[11vw] italic leading-[0.9] sm:text-[10vw]">
+            {[...hero.name].map((ch, i) => (
+              <span key={i} className="glow-letter" style={{ "--i": i } as React.CSSProperties}>
+                {ch === " " ? " " : ch}
+              </span>
+            ))}
+          </span>
+        </div>
+
+        {/* Producto que se transforma */}
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center pt-[14svh]">
+          <div className="stage-helmet relative aspect-square w-full max-w-[min(90vw,72svh)]">
+            {media.map((m, i) => (
+              <div
+                key={i}
+                ref={(el) => {
+                  mediaRefs.current[i] = el;
+                }}
+                className="pointer-events-auto absolute inset-0 will-change-transform"
+                style={i === 0 ? undefined : { opacity: 0, visibility: "hidden" }}
+              >
+                <MediaView media={m} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Paneles de información */}
+        {panels.map((panel, j) => (
+          <div
+            key={panel.word}
+            ref={(el) => {
+              panelRefs.current[j] = el;
+            }}
+            className="pointer-events-none invisible absolute inset-x-4 bottom-[5svh] z-20 opacity-0 lg:inset-x-auto lg:bottom-auto lg:right-[6vw] lg:top-[30%] lg:w-[40vw]"
+          >
+            <p className="label text-brand">{panel.kicker}</p>
+            <h2 className="font-display mt-3 text-4xl italic leading-[0.95] sm:text-5xl xl:text-6xl">
+              {panel.title} <span className="text-brand">{panel.highlight}</span>
+            </h2>
+            <p className="mt-5 max-w-xl text-base text-fg/70 sm:text-lg">{panel.text}</p>
+            {panel.external ? (
+              <a href={panel.href} target="_blank" rel="noopener noreferrer" className={ctaClass}>
+                {panel.cta} →
+              </a>
+            ) : (
+              <Link href={panel.href} className={ctaClass}>
+                {panel.cta} →
+              </Link>
+            )}
+          </div>
+        ))}
+
+        {children}
+      </div>
+
+      {anchorId && <div id={anchorId} className="absolute inset-x-0 bottom-0 h-svh" aria-hidden="true" />}
+    </div>
+  );
+}
+
+const ctaClass =
+  "cut-r mt-8 inline-flex items-center gap-3 bg-brand py-4 pl-7 pr-10 font-bold uppercase tracking-wide text-white transition hover:bg-ink";
+
+function MediaView({ media }: { media: Media }) {
+  if (media.kind === "model") {
+    return (
+      <div className="h-full w-full cursor-grab active:cursor-grabbing">
+        <HelmetViewer src={media.src} alt={media.alt} />
+      </div>
+    );
+  }
+  if (media.kind === "image") {
+    return <Image src={media.src} alt={media.alt} fill sizes="(max-width: 1024px) 90vw, 50vw" className="object-contain" />;
+  }
+  return <Silhouette shape={media.shape} label={media.alt} />;
+}
+
+// Siluetas provisionales mientras llegan las fotos/modelos reales.
+function Silhouette({ shape, label }: { shape: "jacket" | "glove" | "raincoat"; label: string }) {
+  const paths = {
+    jacket:
+      "M72 28 L100 40 L128 28 L162 46 Q172 52 175 66 L188 138 L164 145 L150 92 L150 176 Q100 184 50 176 L50 92 L36 145 L12 138 L25 66 Q28 52 38 46 Z",
+    glove:
+      "M62 182 L62 120 Q48 110 40 92 L30 70 Q28 58 40 60 Q48 62 54 76 L62 90 L62 40 Q62 30 72 30 Q82 30 82 40 L82 84 L84 28 Q84 18 94 18 Q104 18 104 28 L104 84 L108 34 Q108 24 118 24 Q128 24 128 34 L126 88 L132 50 Q133 40 142 41 Q151 42 150 52 L146 112 Q144 128 136 136 L136 182 Z",
+    raincoat:
+      "M100 14 Q74 14 70 44 L44 56 Q34 62 32 76 L22 150 L44 154 L54 100 L52 188 L148 188 L146 100 L156 154 L178 150 L168 76 Q166 62 156 56 L130 44 Q126 14 100 14 Z M84 46 Q100 30 116 46 L112 60 Q100 52 88 60 Z",
+  } as const;
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center" role="img" aria-label={label}>
+      <svg viewBox="0 0 200 200" className="h-[78%] w-[78%]">
+        <defs>
+          <linearGradient id={`sil-${shape}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#2a2a2a" />
+            <stop offset="1" stopColor="#0b0b0b" />
+          </linearGradient>
+        </defs>
+        <path d={paths[shape]} fill={`url(#sil-${shape})`} fillRule="evenodd" />
+        {shape === "jacket" && <path d="M100 40 L100 178" stroke="#e30613" strokeWidth="3" />}
+        {shape === "raincoat" && <path d="M100 60 L100 186" stroke="#e30613" strokeWidth="3" />}
+      </svg>
+      <span className="label mt-2 text-mute">Foto pronto</span>
+    </div>
+  );
+}

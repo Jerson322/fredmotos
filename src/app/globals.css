@@ -175,16 +175,13 @@ body {
   0%,
   100% {
     -webkit-text-fill-color: transparent;
-    text-shadow: none;
   }
   12%,
   22% {
     -webkit-text-fill-color: var(--brand);
-    text-shadow: 0 0 28px rgba(227, 6, 19, 0.45);
   }
   40% {
     -webkit-text-fill-color: transparent;
-    text-shadow: none;
   }
 }
 .glow-letter {
@@ -202,29 +199,7 @@ body {
   }
 }
 
-/* Portada: manchas de color difuminadas que se mueven lento */
-@keyframes drift {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(6vw, -4vh) scale(1.12);
-  }
-  100% {
-    transform: translate(-4vw, 5vh) scale(0.95);
-  }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .blob {
-    animation: drift 18s ease-in-out infinite alternate;
-  }
-  .blob-slow {
-    animation-duration: 26s;
-    animation-direction: alternate-reverse;
-  }
-}
-
-/* Portada con scroll (VenomShowcase publica --h: 0 = portada, 1 = producto a la izquierda) */
+/* Portada con scroll (ProductShowcase publica --h: 0 = portada, 1 = producto a la izquierda) */
 .stage-helmet {
   transform: translateY(calc(var(--h) * -24svh)) scale(calc(1 - var(--h) * 0.35));
 }
@@ -232,4 +207,15 @@ body {
   .stage-helmet {
     transform: translateX(calc(var(--h) * -24vw)) scale(calc(1 - var(--h) * 0.12));
   }
+}
+
+/* Fondo de la vitrina: difuminado blanco, rojo y negro con degradados fijos
+   (no usa blur ni animación, así el scroll va fluido) */
+.showcase-bg {
+  background-color: #fff;
+  background-image:
+    radial-gradient(60vw 60vw at 92% 2%, rgba(227, 6, 19, 0.55), transparent 70%),
+    radial-gradient(40vw 40vw at 78% 98%, rgba(227, 6, 19, 0.38), transparent 70%),
+    radial-gradient(30vw 30vw at 4% 22%, rgba(227, 6, 19, 0.22), transparent 70%),
+    radial-gradient(60vw 60vw at 0% 100%, rgba(14, 14, 14, 0.6), transparent 70%);
 }
