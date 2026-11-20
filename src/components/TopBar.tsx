@@ -4,7 +4,7 @@ import type { StaticImageData } from "next/image";
 import logo from "../../public/brand/logo-blanco.svg";
 import cascoAbierto from "../../public/menu/casco-abierto.png";
 import cascoCross from "../../public/menu/casco-cross.png";
-import cascoDoble from "../../public/menu/casco-doble-proposito.png";
+import cascoDoble from "../../public/menu/casco-multiproposito.png";
 import cascoIntegral from "../../public/menu/casco-integral.png";
 import { getSettings } from "@/lib/content";
 import { whatsappLink } from "@/lib/site";
@@ -19,9 +19,11 @@ type MenuItem = { label: string; href: string; sub?: SubItem[] };
 // Tipos de casco: por ahora filtran la tienda por búsqueda; se ajustan cuando conectemos Ágil.
 const helmetTypes: SubItem[] = [
   { label: "Integrales", href: "/productos?categoria=cascos&q=integral", image: cascoIntegral },
+  // PENDIENTE: dibujo propio del abatible; mientras tanto usa el del integral (se parecen)
+  { label: "Abatibles", href: "/productos?categoria=cascos&q=abatible", image: cascoIntegral },
   { label: "Abiertos", href: "/productos?categoria=cascos&q=abierto", image: cascoAbierto },
+  { label: "Multipropósito", href: "/productos?categoria=cascos&q=multiproposito", image: cascoDoble },
   { label: "Cross", href: "/productos?categoria=cascos&q=cross", image: cascoCross },
-  { label: "Doble propósito", href: "/productos?categoria=cascos&q=doble%20proposito", image: cascoDoble },
 ];
 
 const menu: MenuItem[] = [
@@ -170,7 +172,7 @@ function MegaPanel({ title, href, items }: { title: string; href: string; items:
   return (
     <div className="invisible absolute inset-x-0 top-full -translate-y-2 opacity-0 transition duration-300 group-focus-within/sub:visible group-focus-within/sub:translate-y-0 group-focus-within/sub:opacity-100 group-hover/sub:visible group-hover/sub:translate-y-0 group-hover/sub:opacity-100">
       <div className="mx-5 border-t-2 border-brand bg-ink/95 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8)] backdrop-blur-md sm:mx-8">
-        <div className="grid grid-cols-[repeat(4,1fr)_auto] gap-2 p-6">
+        <div className="grid grid-cols-[repeat(5,1fr)_auto] gap-2 p-6">
           {items.map((sub, i) => (
             <Link
               key={sub.href}
