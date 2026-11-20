@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import logo from "../../public/brand/logo-horizontal.webp";
 import { getCategories } from "@/lib/products";
+import IslandShell from "./IslandShell";
 
 const links = [
   { href: "/productos", label: "Tienda" },
@@ -18,9 +19,9 @@ export default async function TopBar() {
   const categories = (await getCategories()).slice(0, 10);
 
   return (
-    // Isla dinámica: píldora negra flotante con brillo rojo, fija arriba
-    <div className="absolute inset-x-0 top-3 z-30 px-[3vw]">
-      <div className="island mx-auto grid h-[68px] max-w-[1000px] grid-cols-[1fr_auto_1fr] items-center rounded-full px-4 text-white shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)] sm:px-6">
+    // Arriba: barra normal de lado a lado. Al bajar: isla dinámica flotante.
+    <IslandShell>
+      <div className="island mx-auto grid h-[76px] max-w-full grid-cols-[1fr_auto_1fr] items-center rounded-none border-b border-white/10 px-5 text-white transition-all duration-500 ease-[cubic-bezier(.2,.8,.2,1)] sm:px-8 group-data-[scrolled]/island:h-[64px] group-data-[scrolled]/island:max-w-[1000px] group-data-[scrolled]/island:rounded-[32px] group-data-[scrolled]/island:border group-data-[scrolled]/island:border-white/15 group-data-[scrolled]/island:px-4 group-data-[scrolled]/island:shadow-[0_18px_40px_-18px_rgba(0,0,0,0.7)] sm:group-data-[scrolled]/island:px-6">
       {/* Menú escritorio */}
       <nav className="hidden items-center gap-7 lg:flex" aria-label="Principal">
         <div className="group relative">
@@ -97,6 +98,6 @@ export default async function TopBar() {
         <span className="hidden sm:inline">¿Quieres ser distribuidor?</span>
       </a>
       </div>
-    </div>
+    </IslandShell>
   );
 }

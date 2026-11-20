@@ -162,12 +162,12 @@ body {
   }
 }
 .text-shine {
-  /* negro translúcido: se lee sobre blanco y sobre rojo; el brillo es una franja roja */
+  /* blanco translúcido sobre el fondo oscuro; el brillo es una franja roja */
   background-image: linear-gradient(
     105deg,
-    rgba(14, 14, 14, 0.13) 38%,
-    rgba(227, 6, 19, 0.55) 50%,
-    rgba(14, 14, 14, 0.13) 62%
+    rgba(255, 255, 255, 0.09) 38%,
+    rgba(227, 6, 19, 0.6) 50%,
+    rgba(255, 255, 255, 0.09) 62%
   );
   background-size: 250% 100%;
   background-position: 150% 0;
@@ -215,15 +215,14 @@ body {
   }
 }
 
-/* Fondo de la vitrina: degradado rojo y negro, difuminado a blanco en los bordes
-   (degradados fijos: no usa blur ni animación, así el scroll va fluido) */
+/* Fondo de la vitrina: oscuro, con rojo y negro (fijo, sin blur ni animación) */
 .showcase-bg {
-  background-color: #fff;
+  background-color: #0e0e0e;
   background-image:
-    radial-gradient(ellipse 78% 72% at 50% 50%, transparent 40%, #fff 100%),
-    radial-gradient(50% 65% at 80% 42%, rgba(227, 6, 19, 0.72), transparent 75%),
-    radial-gradient(50% 65% at 20% 62%, rgba(14, 14, 14, 0.62), transparent 75%),
-    radial-gradient(40% 45% at 55% 12%, rgba(227, 6, 19, 0.3), transparent 70%);
+    radial-gradient(45% 60% at 28% 58%, rgba(227, 6, 19, 0.55), transparent 72%),
+    radial-gradient(50% 55% at 95% 0%, rgba(227, 6, 19, 0.4), transparent 70%),
+    radial-gradient(40% 50% at 85% 100%, rgba(184, 5, 15, 0.35), transparent 70%),
+    radial-gradient(ellipse 90% 80% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.6) 100%);
 }
 
 /* Isla dinámica del encabezado */

@@ -164,7 +164,7 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
       className="relative"
       style={{ height: `calc(${N * STAGE_SVH}svh + 100svh)`, "--h": 0 } as React.CSSProperties}
     >
-      <div className="showcase-bg sticky top-0 h-svh overflow-hidden text-fg">
+      <div className="showcase-bg sticky top-0 h-svh overflow-hidden text-white">
         {/* Palabras gigantes de fondo por categoría */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center select-none" aria-hidden="true">
           {panels.map((panel, j) => (
@@ -173,7 +173,7 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
               ref={(el) => {
                 wordRefs.current[j] = el;
               }}
-              className="font-display absolute whitespace-nowrap text-[18vw] italic leading-none text-ink/[0.09] opacity-0"
+              className="font-display absolute whitespace-nowrap text-[18vw] italic leading-none text-white/[0.06] opacity-0"
             >
               {panel.word}
             </span>
@@ -229,7 +229,7 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
             <h2 className="font-display mt-3 text-4xl italic leading-[0.95] sm:text-5xl xl:text-6xl">
               {panel.title} <span className="text-brand">{panel.highlight}</span>
             </h2>
-            <p className="mt-5 max-w-xl text-base text-fg/70 sm:text-lg">{panel.text}</p>
+            <p className="mt-5 max-w-xl text-base text-white/70 sm:text-lg">{panel.text}</p>
             {panel.external ? (
               <a href={panel.href} target="_blank" rel="noopener noreferrer" className={ctaClass}>
                 {panel.cta} →
@@ -251,7 +251,7 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
 }
 
 const ctaClass =
-  "cut-r mt-8 inline-flex items-center gap-3 bg-brand py-4 pl-7 pr-10 font-bold uppercase tracking-wide text-white transition hover:bg-ink";
+  "cut-r mt-8 inline-flex items-center gap-3 bg-brand py-4 pl-7 pr-10 font-bold uppercase tracking-wide text-white transition hover:bg-white hover:text-ink";
 
 function MediaView({ media }: { media: Media }) {
   if (media.kind === "model") {
