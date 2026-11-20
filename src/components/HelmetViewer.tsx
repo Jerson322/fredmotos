@@ -8,7 +8,11 @@ export default function HelmetViewer({ src, alt }: { src: string; alt: string })
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    import("@google/model-viewer").then(() => setReady(true));
+    import("@google/model-viewer").then(({ ModelViewerElement }) => {
+      // Decodificador de la compresión Meshopt (modelos optimizados desde el panel admin)
+      ModelViewerElement.meshoptDecoderLocation = "/vendor/meshopt_decoder.js";
+      setReady(true);
+    });
   }, []);
 
   return (

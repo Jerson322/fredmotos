@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useRef, useState, useTransition } from "react";
+import type { CompressStep } from "@/lib/compress-glb";
 import { createBrowserSupabase } from "@/lib/supabase/browser";
 import { createSlide } from "../../actions";
 
@@ -12,19 +13,32 @@ const localModels = [
   { url: "/models/impermeable.glb", label: "Impermeable" },
 ];
 
-const MAX_MB = 50; // límite de Supabase (plan gratis)
-const WARN_MB = 10; // más que esto carga lento en celular
+const MAX_INPUT_MB = 300; // archivo original (se comprime en el navegador)
+const MAX_MB = 50; // límite de Supabase (plan gratis) para el archivo ya comprimido
+const COMPRESS_FROM_MB = 2; // los modelos más livianos se suben tal cual
+
+const stepText: Record<CompressStep, string> = {
+  leyendo: "Leyendo el modelo…",
+  malla: "Optimizando la malla…",
+  texturas: "Comprimiendo texturas…",
+  guardando: "Terminando…",
+};
+
+const fmtMb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1).replace(".", ",")} MB`;
 
 export default function NewSlideForm() {
   const [state, action, saving] = useActionState(createSlide, undefined);
   const [source, setSource] = useState<"upload" | "local">("upload");
   const [uploadError, setUploadError] = useState<string>();
   const [uploading, startUpload] = useTransition();
+  const [status, setStatus] = useState<string>();
+  const [report, setReport] = useState<string>();
   const formRef = useRef<HTMLFormElement>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setUploadError(undefined);
+    setReport(undefined);
     const form = new FormData(e.currentTarget);
 
     if (source === "upload") {
@@ -32,20 +46,38 @@ export default function NewSlideForm() {
       if (!(file instanceof File) || file.size === 0) return setUploadError("Elige el archivo .glb del modelo.");
       if (!file.name.toLowerCase().endsWith(".glb")) return setUploadError("El modelo debe ser un archivo .glb.");
       const mb = file.size / 1024 / 1024;
-      if (mb > MAX_MB) return setUploadError(`El archivo pesa ${mb.toFixed(0)} MB; el máximo es ${MAX_MB} MB.`);
-      if (
-        mb > WARN_MB &&
-        !confirm(`El modelo pesa ${mb.toFixed(0)} MB y la página cargará lento en celular. Lo ideal es comprimirlo antes (menos de ${WARN_MB} MB). ¿Subirlo igual?`)
-      ) {
-        return;
-      }
+      if (mb > MAX_INPUT_MB) return setUploadError(`El archivo pesa ${mb.toFixed(0)} MB; el máximo es ${MAX_INPUT_MB} MB.`);
 
       startUpload(async () => {
+        // 1) Comprimir automáticamente en el navegador
+        let upload: Blob = file;
+        if (mb > COMPRESS_FROM_MB) {
+          try {
+            const { compressGlb } = await import("@/lib/compress-glb");
+            upload = await compressGlb(file, (step) => setStatus(stepText[step]));
+            if (upload.size >= file.size) upload = file; // por si no se pudo reducir
+            setReport(`Modelo optimizado: ${fmtMb(file.size)} → ${fmtMb(upload.size)}`);
+          } catch (err) {
+            console.error(err);
+            setStatus(undefined);
+            setUploadError("No se pudo optimizar este modelo. Revisa que sea un .glb válido o pásaselo a soporte.");
+            return;
+          }
+        }
+        if (upload.size / 1024 / 1024 > MAX_MB) {
+          setStatus(undefined);
+          setUploadError(`Aun comprimido pesa ${fmtMb(upload.size)}; el máximo es ${MAX_MB} MB.`);
+          return;
+        }
+
+        // 2) Subir a Supabase Storage
+        setStatus("Subiendo…");
         const supabase = createBrowserSupabase();
         const path = `${crypto.randomUUID()}.glb`;
         const { error } = await supabase.storage
           .from("modelos")
-          .upload(path, file, { contentType: "model/gltf-binary", cacheControl: "31536000" });
+          .upload(path, upload, { contentType: "model/gltf-binary", cacheControl: "31536000" });
+        setStatus(undefined);
         if (error) {
           setUploadError(`No se pudo subir el modelo: ${error.message}`);
           return;
@@ -97,7 +129,7 @@ export default function NewSlideForm() {
               className="mt-3 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-ink file:px-4 file:py-2 file:font-bold file:text-white hover:file:bg-brand"
             />
             <p className="mt-2 text-xs text-mute">
-              Formato .glb, idealmente de menos de {WARN_MB} MB. Si pesa más, comprímelo en gltf.report antes de subirlo.
+              Formato .glb. Si pesa mucho no importa: se optimiza solo antes de subirlo para que la página cargue rápido.
             </p>
           </>
         ) : (
@@ -112,10 +144,11 @@ export default function NewSlideForm() {
       </fieldset>
 
       {(uploadError || state?.error) && <p className="text-sm text-brand">{uploadError ?? state?.error}</p>}
+      {report && !uploadError && <p className="text-sm text-green-700">{report}</p>}
       {state?.ok && !uploadError && <p className="text-sm text-green-700">{state.ok}</p>}
 
       <button disabled={busy} className="h-11 rounded-lg bg-brand px-6 font-bold uppercase tracking-wide text-white hover:bg-brand-dark disabled:opacity-60">
-        {uploading ? "Subiendo modelo…" : saving ? "Guardando…" : "Agregar al carrusel"}
+        {uploading ? (status ?? "Procesando…") : saving ? "Guardando…" : "Agregar al carrusel"}
       </button>
     </form>
   );
