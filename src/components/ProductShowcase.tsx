@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import HelmetViewer from "./HelmetViewer";
 
 // =====================================================================
@@ -56,6 +56,8 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
 
   const N = panels.length; // etapas: 0 = portada, 1..N = paneles
+  // Modelos 3D cargados: solo el primero al abrir; los demás cuando el scroll se acerca
+  const [loaded, setLoaded] = useState<Set<number>>(() => new Set([panels[0]?.media ?? 0]));
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -63,6 +65,7 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
     const mediaAt = (k: number) => panels[clamp(k, 1, N) - 1].media;
     let raf = 0;
     let lastActive = -1;
+    const loadedRef = new Set<number>([mediaAt(1)]);
 
     const update = () => {
       raf = 0;
@@ -142,8 +145,19 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
         }
       });
 
-      // El casco también gira con el scroll
-      stage.querySelector("model-viewer")?.setAttribute("orientation", `0deg 0deg ${(s * 120).toFixed(1)}deg`);
+      // Precarga: el modelo de la etapa siguiente empieza a cargar al llegar a la actual
+      const upcoming = mediaAt(Math.min(N, k + 2));
+      [from, to, upcoming].forEach((m) => {
+        if (!loadedRef.has(m)) {
+          loadedRef.add(m);
+          setLoaded(new Set(loadedRef));
+        }
+      });
+
+      // Los modelos también giran con el scroll
+      stage
+        .querySelectorAll("model-viewer")
+        .forEach((mv) => mv.setAttribute("orientation", `0deg 0deg ${(s * 120).toFixed(1)}deg`));
     };
 
     const onScroll = () => {
@@ -220,7 +234,7 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
                 className="pointer-events-auto absolute inset-0 will-change-transform"
                 style={i === 0 ? undefined : { opacity: 0, visibility: "hidden" }}
               >
-                <MediaView media={m} />
+                {loaded.has(i) ? <MediaView media={m} /> : null}
               </div>
             ))}
           </div>

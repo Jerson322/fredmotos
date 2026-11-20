@@ -11,9 +11,9 @@ const media: Media[] = [
     src: "/models/Meshy_AI_Racing_Helmet_3D_1118204508_image-to-3d-texture.glb",
     alt: "Casco HJC RPHA Funky Diablo en 3D",
   },
-  { kind: "placeholder", shape: "jacket", alt: "Chaqueta para moto" },
-  { kind: "placeholder", shape: "glove", alt: "Guantes para moto" },
-  { kind: "placeholder", shape: "raincoat", alt: "Impermeable para moto" },
+  { kind: "model", src: "/models/chaqueta.glb", alt: "Chaqueta para moto en 3D" },
+  { kind: "model", src: "/models/guantes.glb", alt: "Guantes para moto en 3D" },
+  { kind: "model", src: "/models/impermeable.glb", alt: "Impermeable para moto en 3D" },
 ];
 
 const panels: Panel[] = [
