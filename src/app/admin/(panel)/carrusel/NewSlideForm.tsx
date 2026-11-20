@@ -76,7 +76,12 @@ export default function NewSlideForm() {
         const path = `${crypto.randomUUID()}.glb`;
         const { error } = await supabase.storage
           .from("modelos")
-          .upload(path, upload, { contentType: "model/gltf-binary", cacheControl: "31536000" });
+          // El navegador suele marcar los .glb como "application/octet-stream"; Supabase solo
+          // acepta "model/gltf-binary", así que se re-etiqueta siempre antes de subir.
+          .upload(path, new Blob([upload], { type: "model/gltf-binary" }), {
+            contentType: "model/gltf-binary",
+            cacheControl: "31536000",
+          });
         setStatus(undefined);
         if (error) {
           setUploadError(`No se pudo subir el modelo: ${error.message}`);
