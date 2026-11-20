@@ -6,6 +6,9 @@ import cascoAbierto from "../../public/menu/casco-abierto.png";
 import cascoCross from "../../public/menu/casco-cross.png";
 import cascoDoble from "../../public/menu/casco-doble-proposito.png";
 import cascoIntegral from "../../public/menu/casco-integral.png";
+import { getSettings } from "@/lib/content";
+import { whatsappLink } from "@/lib/site";
+import { TruckIcon } from "./Icons";
 
 // Menú principal: categorías de la tienda. El enlace usa el grupo de Ágil convertido a
 // "slug" (ej. grupo "INDUMENTARIA" → categoria=indumentaria). Si en Ágil se llaman distinto,
@@ -30,9 +33,42 @@ const menu: MenuItem[] = [
 const topLink = "text-[15px] font-extrabold uppercase tracking-[0.12em] text-white transition hover:text-brand";
 
 // Encabezado fijo arriba: categorías a la izquierda, logo al centro, mayoristas a la derecha.
-export default function TopBar() {
+export default async function TopBar() {
+  const settings = await getSettings();
+  const helpLinks = [
+    { label: "Guía de tallas", href: "/guia-de-tallas" },
+    { label: "Tiendas", href: "/tiendas" },
+    {
+      label: "Rastrea tu pedido",
+      href: whatsappLink(settings.whatsapp, "Hola Fredmotos, quiero saber el estado de mi pedido. Mi número de pedido es:"),
+      external: true,
+    },
+  ];
+
   return (
     <div className="absolute inset-x-0 top-0 z-30">
+      {/* Línea 1: envíos */}
+      <div className="flex h-8 items-center justify-center gap-2 bg-brand text-[11px] font-extrabold uppercase tracking-[0.18em] text-white sm:text-xs">
+        <TruckIcon className="h-4 w-4" />
+        Envíos a toda Colombia
+      </div>
+
+      {/* Línea 2: enlaces de ayuda */}
+      <div className="flex h-7 items-center justify-center gap-4 border-b border-white/10 bg-black/35 px-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/70 sm:justify-end sm:gap-6 sm:px-8 sm:text-[11px]">
+        {helpLinks.map((l, i) => (
+          <span key={l.label} className="flex items-center gap-4 sm:gap-6">
+            {i > 0 && <span className="h-3 w-px bg-white/20" aria-hidden="true" />}
+            <a
+              href={l.href}
+              {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              className="transition hover:text-white"
+            >
+              {l.label}
+            </a>
+          </span>
+        ))}
+      </div>
+
       <div className="relative grid h-[92px] grid-cols-[1fr_auto_1fr] items-center px-5 text-white sm:px-8">
         {/* Menú escritorio */}
         <nav className="hidden h-full items-center gap-10 lg:flex" aria-label="Categorías">
