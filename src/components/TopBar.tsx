@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import logo from "../../public/brand/logo-horizontal.webp";
+import logo from "../../public/brand/logo-blanco.svg";
 import { getCategories } from "@/lib/products";
 import IslandShell from "./IslandShell";
 
@@ -85,7 +85,7 @@ export default async function TopBar() {
       </details>
 
       <Link href="/" aria-label="Fredmotos, ir al inicio">
-        <Image src={logo} alt="Fredmotos" className="h-9 w-auto brightness-0 invert sm:h-11"
+        <Image src={logo} alt="Fredmotos" className="h-9 w-auto sm:h-11"
           loading="eager"
         />
       </Link>

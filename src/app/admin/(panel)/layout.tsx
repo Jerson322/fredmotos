@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { requireAdmin } from "@/lib/admin";
-import logo from "../../../../public/brand/logo-horizontal.webp";
+import logo from "../../../../public/brand/logo-blanco.svg";
 import { signOut } from "../actions";
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
     <div className="min-h-svh bg-paper text-fg lg:grid lg:grid-cols-[250px_1fr]">
       <aside className="flex flex-col gap-6 bg-ink p-5 text-white lg:sticky lg:top-0 lg:h-svh">
         <Link href="/admin" className="flex items-center gap-3">
-          <Image src={logo} alt="Fredmotos" className="h-9 w-auto brightness-0 invert" />
+          <Image src={logo} alt="Fredmotos" className="h-9 w-auto" />
           <span className="label text-white/50">Admin</span>
         </Link>
         <nav className="flex gap-1 overflow-x-auto lg:flex-col">

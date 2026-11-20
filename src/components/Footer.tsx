@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import logo from "../../public/brand/logo-horizontal.webp";
+import logo from "../../public/brand/logo-blanco.svg";
 import { getCategories } from "@/lib/products";
 import { getSettings } from "@/lib/content";
 import { site } from "@/lib/site";
