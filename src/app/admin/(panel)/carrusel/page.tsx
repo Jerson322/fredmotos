@@ -34,11 +34,19 @@ export default async function CarouselAdmin() {
             Aún no hay diapositivas. Mientras tanto, el inicio muestra el casco HJC RPHA Funky Diablo.
           </p>
         ) : (
+          <>
+          {slides.filter((s) => s.active).length < 2 && (
+            <p className="mt-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
+              Hay solo una diapositiva visible, así que el carrusel no rota. Agrega al menos otra (puedes usar uno de los
+              modelos de la página) para que cambie sola y aparezcan las flechas.
+            </p>
+          )}
           <ul className="mt-3 space-y-3">
             {slides.map((s, i) => (
               <SlideRow key={s.id} slide={s} first={i === 0} last={i === slides.length - 1} />
             ))}
           </ul>
+          </>
         )}
       </section>
 
