@@ -1,5 +1,6 @@
 import TopBar from "@/components/TopBar";
 import ProductShowcase, { type Media, type Panel } from "@/components/ProductShowcase";
+import { getHeroSlides, getSettings } from "@/lib/content";
 import { whatsappLink } from "@/lib/site";
 
 // Productos que se transforman al hacer scroll.
@@ -16,7 +17,7 @@ const media: Media[] = [
   { kind: "model", src: "/models/impermeable.glb", alt: "Impermeable para moto en 3D" },
 ];
 
-const panels: Panel[] = [
+const categoryPanels: Panel[] = [
   {
     media: 0,
     kicker: "Cascos",
@@ -57,25 +58,30 @@ const panels: Panel[] = [
     href: "/productos?q=impermeable",
     word: "LLUVIA",
   },
-  {
-    media: 0,
-    kicker: "Distribuidores",
-    title: "¿Quieres ser",
-    highlight: "distribuidor?",
-    // TODO: texto real de Fredmotos sobre el programa de distribuidores
-    text: "Vende nuestros productos en tu almacén o taller. Escríbenos y te contamos las condiciones.",
-    cta: "Quiero ser distribuidor",
-    href: whatsappLink("Hola Fredmotos, quiero ser distribuidor."),
-    external: true,
-    word: "FREDMOTOS",
-  },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const [slides, settings] = await Promise.all([getHeroSlides(), getSettings()]);
+  // Último panel: distribuidores (texto y WhatsApp editables en el panel admin)
+  const panels: Panel[] = [
+    ...categoryPanels,
+    {
+      media: 0,
+      kicker: "Distribuidores",
+      title: "¿Quieres ser",
+      highlight: "distribuidor?",
+      text: settings.distributorText,
+      cta: "Quiero ser distribuidor",
+      href: whatsappLink(settings.whatsapp, "Hola Fredmotos, quiero ser distribuidor."),
+      external: true,
+      word: "FREDMOTOS",
+    },
+  ];
+
   return (
     <>
       <h1 className="sr-only">Fredmotos: cascos, chaquetas, guantes e impermeables para moto</h1>
-      <ProductShowcase media={media} panels={panels} hero={{ brand: "HJC RPHA", name: "Funky Diablo" }} anchorId="distribuidores">
+      <ProductShowcase slides={slides} media={media} panels={panels} anchorId="distribuidores">
         <TopBar />
       </ProductShowcase>
     </>

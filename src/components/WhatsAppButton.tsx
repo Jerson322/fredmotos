@@ -1,9 +1,11 @@
+import { getSettings } from "@/lib/content";
 import { whatsappLink } from "@/lib/site";
 
-export default function WhatsAppButton() {
+export default async function WhatsAppButton() {
+  const settings = await getSettings();
   return (
     <a
-      href={whatsappLink("Hola Fredmotos, quiero información.")}
+      href={whatsappLink(settings.whatsapp, "Hola Fredmotos, quiero información.")}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Escríbenos por WhatsApp"

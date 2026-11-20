@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import HelmetViewer from "./HelmetViewer";
 
 // =====================================================================
@@ -30,40 +30,89 @@ export type Panel = {
   word: string; // palabra gigante de fondo
 };
 
+export type Slide = { id: string; brand: string; name: string; modelUrl: string };
+
 type Props = {
+  slides: Slide[]; // carrusel del inicio (modelos 3D)
   media: Media[];
   panels: Panel[];
-  hero: { brand: string; name: string };
   anchorId?: string; // ancla al último panel (distribuidores)
   children?: React.ReactNode; // barra superior (logo + botón)
 };
 
-const STAGE_SVH = 90;
- // scroll que dura cada etapa
+const STAGE_SVH = 90; // scroll que dura cada etapa
+const SLIDE_MS = 900; // duración del cambio de diapositiva
+const SLIDE_EVERY = 6500; // cambio automático del carrusel
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const smooth = (x: number) => {
   x = clamp(x);
   return x * x * (3 - 2 * x);
 };
 
-export default function ProductShowcase({ media, panels, hero, anchorId, children }: Props) {
+type Carousel = {
+  current: number;
+  tween: { from: number; to: number; start: number } | null;
+  kick: () => void; // fuerza un recálculo (animación del cambio)
+  atTop: boolean;
+};
+
+export default function ProductShowcase({ slides, media: panelMedia, panels, anchorId, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const slideTextRefs = useRef<(HTMLDivElement | null)[]>([]);
   const mediaRefs = useRef<(HTMLDivElement | null)[]>([]);
   const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const carousel = useRef<Carousel>({ current: 0, tween: null, kick: () => {}, atTop: true });
 
-  const N = panels.length; // etapas: 0 = portada, 1..N = paneles
-  // Modelos 3D cargados: solo el primero al abrir; los demás cuando el scroll se acerca
-  const [loaded, setLoaded] = useState<Set<number>>(() => new Set([panels[0]?.media ?? 0]));
+  const S = slides.length;
+  const N = panels.length; // etapas: 0 = portada (carrusel), 1..N = paneles
+  // Lista única de medios: primero las diapositivas, luego los de la vitrina
+  const media = useMemo<Media[]>(
+    () => [
+      ...slides.map((sl) => ({ kind: "model" as const, src: sl.modelUrl, alt: `${sl.brand} ${sl.name} en 3D` })),
+      ...panelMedia,
+    ],
+    [slides, panelMedia],
+  );
+  const [slide, setSlide] = useState(0);
+  // Modelos 3D cargados: los dos primeros del carrusel al abrir; el resto al acercarse
+  const [loaded, setLoaded] = useState<Set<number>>(() => new Set([0, Math.min(1, S - 1)]));
+  const markLoaded = (ids: number[]) =>
+    setLoaded((prev) => (ids.every((i) => prev.has(i)) ? prev : new Set([...prev, ...ids])));
+
+  const goTo = (i: number) => {
+    const c = carousel.current;
+    if (S < 2 || c.tween || !c.atTop) return;
+    const to = (i + S) % S;
+    if (to === c.current) return;
+    c.tween = { from: c.current, to, start: performance.now() };
+    c.current = to;
+    setSlide(to);
+    markLoaded([to, (to + 1) % S]);
+    c.kick();
+  };
+
+  // Cambio automático (solo arriba del todo y con la pestaña visible)
+  useEffect(() => {
+    if (S < 2) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = setInterval(() => {
+      if (!document.hidden) goTo(carousel.current.current + 1);
+    }, SLIDE_EVERY);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [S, slide]);
 
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage) return;
-    const mediaAt = (k: number) => panels[clamp(k, 1, N) - 1].media;
+    const c = carousel.current;
+    const mediaAt = (k: number) => (k <= 0 ? c.current : S + panels[Math.min(k, N) - 1].media);
     let raf = 0;
     let lastActive = -1;
-    const loadedRef = new Set<number>([mediaAt(1)]);
+    const loadedRef = new Set<number>();
 
     const update = () => {
       raf = 0;
@@ -73,15 +122,46 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
       const k = Math.min(Math.floor(T), N);
       const x = smooth((T - k - 0.15) / 0.7); // 0→1 dentro de cada tramo, con pausa en los extremos
       const s = k + x;
+      c.atTop = s < 0.02;
 
-      const h = clamp(s);
-      stage.style.setProperty("--h", h.toFixed(4));
+      stage.style.setProperty("--h", clamp(s).toFixed(4));
+      const heroO = clamp(1 - s * 3);
+      if (heroRef.current) heroRef.current.style.opacity = String(heroO);
+      if (controlsRef.current) {
+        controlsRef.current.style.opacity = String(heroO);
+        controlsRef.current.style.pointerEvents = heroO > 0.5 ? "auto" : "none";
+      }
 
-      if (heroRef.current) heroRef.current.style.opacity = String(clamp(1 - s * 3));
+      // Cambio de diapositiva en curso (se termina de golpe si el usuario empieza a bajar)
+      let from = mediaAt(k);
+      let to = mediaAt(k + 1);
+      let mix = x;
+      let tweening = false;
+      let weights: number[] = slides.map((_, i) => (i === c.current ? 1 : 0));
+      if (c.tween) {
+        const p = (performance.now() - c.tween.start) / SLIDE_MS;
+        if (p >= 1 || !c.atTop) {
+          c.tween = null;
+        } else {
+          tweening = true;
+          from = c.tween.from;
+          to = c.tween.to;
+          mix = smooth(p);
+          weights = slides.map((_, i) => (i === from ? 1 - mix : i === to ? mix : 0));
+          raf = requestAnimationFrame(update);
+        }
+      }
+      slideTextRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const w = weights[i] ?? 0;
+        const dir = tweening && i === to ? 1 : -1; // la nueva sube, la anterior se va hacia arriba
+        el.style.opacity = w.toFixed(3);
+        el.style.transform = `translateY(${((1 - w) * 40 * dir).toFixed(1)}px)`;
+        el.style.visibility = w > 0.001 ? "visible" : "hidden";
+      });
 
       // Transformación de la imagen: la actual se encoge y se va, la siguiente crece desde el centro
-      const from = mediaAt(k);
-      const to = mediaAt(k + 1);
+      const settled = from === to || (k >= N && !tweening);
       media.forEach((_, i) => {
         const el = mediaRefs.current[i];
         if (!el) return;
@@ -89,24 +169,24 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
         let scale = 1;
         let rot = 0;
         let clip = 100;
-        if (from === to || k >= N) {
+        if (settled) {
           o = i === from ? 1 : 0;
         } else if (i === from) {
-          o = 1 - smooth((x - 0.35) / 0.5);
-          scale = 1 - x * 0.25;
-          rot = x * -12;
+          o = 1 - smooth((mix - 0.35) / 0.5);
+          scale = 1 - mix * 0.25;
+          rot = mix * -12;
         } else if (i === to) {
-          o = smooth(x / 0.5);
-          scale = 0.75 + x * 0.25;
-          rot = (1 - x) * 12;
-          clip = 8 + x * 92;
+          o = smooth(mix / 0.5);
+          scale = 0.75 + mix * 0.25;
+          rot = (1 - mix) * 12;
+          clip = 8 + mix * 92;
         }
         el.style.opacity = o.toFixed(3);
         el.style.transform = `scale(${scale.toFixed(3)}) rotate(${rot.toFixed(2)}deg)`;
         el.style.clipPath = clip >= 100 ? "none" : `circle(${(clip * 0.75).toFixed(1)}% at 50% 50%)`;
         el.style.visibility = o > 0.001 ? "visible" : "hidden";
       });
-      const active = x < 0.5 || k >= N ? from : to;
+      const active = settled || mix < 0.5 ? from : to;
       if (active !== lastActive) {
         lastActive = active;
         mediaRefs.current.forEach((el, i) => el?.setAttribute("aria-hidden", String(i !== active)));
@@ -132,12 +212,11 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
 
       // Precarga: el modelo de la etapa siguiente empieza a cargar al llegar a la actual
       const upcoming = mediaAt(Math.min(N, k + 2));
-      [from, to, upcoming].forEach((m) => {
-        if (!loadedRef.has(m)) {
-          loadedRef.add(m);
-          setLoaded(new Set(loadedRef));
-        }
-      });
+      const need = [from, to, upcoming].filter((m) => !loadedRef.has(m));
+      if (need.length) {
+        need.forEach((m) => loadedRef.add(m));
+        markLoaded(need);
+      }
 
       // Los modelos también giran con el scroll
       stage
@@ -148,15 +227,18 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
     };
+    c.kick = onScroll;
     update();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
       cancelAnimationFrame(raf);
+      c.kick = () => {};
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [N, media, panels]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [N, S, media, panels, slides]);
 
   return (
     <div
@@ -183,23 +265,62 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
           ))}
         </div>
 
-        {/* Nombre del casco (solo en la portada) */}
-        <div
-          ref={heroRef}
-          className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center select-none"
-          aria-hidden="true"
-        >
-          <span className="font-display text-shine whitespace-nowrap text-[17vw] italic leading-[0.85] sm:text-[14vw]">
-            {hero.brand}
-          </span>
-          <span className="font-display whitespace-nowrap text-[11vw] italic leading-[0.9] sm:text-[10vw]">
-            {[...hero.name].map((ch, i) => (
-              <span key={i} className="glow-letter" style={{ "--i": i } as React.CSSProperties}>
-                {ch === " " ? " " : ch}
+        {/* Carrusel: nombre del producto de cada diapositiva (solo en la portada) */}
+        <div ref={heroRef} className="pointer-events-none absolute inset-0 select-none" aria-hidden="true">
+          {slides.map((sl, si) => (
+            <div
+              key={sl.id}
+              ref={(el) => {
+                slideTextRefs.current[si] = el;
+              }}
+              className="absolute inset-0 flex flex-col items-center justify-center text-center"
+              style={si === 0 ? undefined : { opacity: 0, visibility: "hidden" }}
+            >
+              {sl.brand && (
+                <span className="font-display text-shine whitespace-nowrap text-[17vw] italic leading-[0.85] sm:text-[14vw]">
+                  {sl.brand}
+                </span>
+              )}
+              <span className="font-display whitespace-nowrap text-[11vw] italic leading-[0.9] sm:text-[10vw]">
+                {[...sl.name].map((ch, i) => (
+                  <span key={i} className="glow-letter" style={{ "--i": i } as React.CSSProperties}>
+                    {ch === " " ? " " : ch}
+                  </span>
+                ))}
               </span>
-            ))}
-          </span>
+            </div>
+          ))}
         </div>
+
+        {/* Controles del carrusel */}
+        {S > 1 && (
+          <div
+            ref={controlsRef}
+            className="absolute inset-x-0 bottom-[4svh] z-20 flex items-center justify-center gap-4"
+            role="group"
+            aria-label="Carrusel de productos"
+          >
+            <button onClick={() => goTo(slide - 1)} aria-label="Anterior" className={arrowClass}>
+              ‹
+            </button>
+            <div className="flex gap-2">
+              {slides.map((sl, i) => (
+                <button
+                  key={sl.id}
+                  onClick={() => goTo(i)}
+                  aria-label={`Ver ${sl.brand} ${sl.name}`}
+                  aria-current={i === slide}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    i === slide ? "w-8 bg-brand" : "w-3 bg-white/40 hover:bg-white/70"
+                  }`}
+                />
+              ))}
+            </div>
+            <button onClick={() => goTo(slide + 1)} aria-label="Siguiente" className={arrowClass}>
+              ›
+            </button>
+          </div>
+        )}
 
         {/* Producto que se transforma */}
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center pt-[14svh]">
@@ -252,6 +373,9 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
     </div>
   );
 }
+
+const arrowClass =
+  "flex h-10 w-10 items-center justify-center rounded-full border border-white/25 text-2xl leading-none text-white/80 transition hover:border-brand hover:bg-brand hover:text-white";
 
 const ctaClass =
   "cut-r mt-8 inline-flex items-center gap-3 bg-brand py-4 pl-7 pr-10 font-bold uppercase tracking-wide text-white transition hover:bg-white hover:text-ink";

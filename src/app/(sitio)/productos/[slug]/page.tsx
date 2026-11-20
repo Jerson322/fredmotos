@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CardIcon, ChatIcon, ShieldIcon, TruckIcon } from "@/components/Icons";
 import ProductImage from "@/components/ProductImage";
 import { getPrebuiltSlugs, getProduct } from "@/lib/products";
+import { getSettings } from "@/lib/content";
 import { formatPrice, whatsappLink } from "@/lib/site";
 
 // Se pre-generan los destacados; el resto se genera en su primera visita y queda en caché.
@@ -25,7 +26,7 @@ export async function generateMetadata(props: PageProps<"/productos/[slug]">): P
 
 export default async function ProductPage(props: PageProps<"/productos/[slug]">) {
   const { slug } = await props.params;
-  const product = await getProduct(slug);
+  const [product, settings] = await Promise.all([getProduct(slug), getSettings()]);
   if (!product) notFound();
 
   const { category } = product;
@@ -96,7 +97,7 @@ export default async function ProductPage(props: PageProps<"/productos/[slug]">)
             {outOfStock ? "Agotado" : "Agregar al carrito"}
           </button>
           <a
-            href={whatsappLink(`Hola, me interesa: ${product.name} (código ${product.code})`)}
+            href={whatsappLink(settings.whatsapp, `Hola, me interesa: ${product.name} (código ${product.code})`)}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-3 flex h-14 w-full items-center justify-center gap-2 border-2 border-fg font-bold uppercase tracking-wide transition hover:bg-fg hover:text-white"

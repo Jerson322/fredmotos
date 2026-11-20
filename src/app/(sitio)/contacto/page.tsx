@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { ChatIcon } from "@/components/Icons";
-import { site, whatsappLink } from "@/lib/site";
+import { getSettings } from "@/lib/content";
+import { whatsappLink } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Contacto" };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const site = await getSettings();
   const items = [
     { label: "WhatsApp / Teléfono", value: site.phone },
     { label: "Correo", value: site.email },
@@ -22,7 +24,7 @@ export default function ContactPage() {
             ¿Dudas con una referencia o con tu pedido? La forma más rápida es WhatsApp.
           </p>
           <a
-            href={whatsappLink("Hola Fredmotos, tengo una consulta.")}
+            href={whatsappLink(site.whatsapp, "Hola Fredmotos, tengo una consulta.")}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-8 inline-flex items-center gap-2 bg-brand px-7 py-4 font-bold uppercase tracking-wide text-white hover:bg-brand-dark"

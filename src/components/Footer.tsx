@@ -2,11 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import logo from "../../public/brand/logo-horizontal.webp";
 import { getCategories } from "@/lib/products";
+import { getSettings } from "@/lib/content";
 import { site } from "@/lib/site";
 import CurrentYear from "./CurrentYear";
 
 export default async function Footer() {
-  const categories = await getCategories();
+  const [categories, settings] = await Promise.all([getCategories(), getSettings()]);
 
   return (
     <footer className="mt-auto bg-ink text-white">
@@ -34,10 +35,10 @@ export default async function Footer() {
         </FooterCol>
 
         <FooterCol title="Contacto">
-          <li>{site.phone}</li>
-          <li>{site.email}</li>
-          <li>{site.address}</li>
-          <li>{site.hours}</li>
+          <li>{settings.phone}</li>
+          <li>{settings.email}</li>
+          <li>{settings.address}</li>
+          <li>{settings.hours}</li>
         </FooterCol>
       </div>
       <div className="border-t border-white/10">
