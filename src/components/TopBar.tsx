@@ -11,17 +11,19 @@ const menu = [
   { label: "Accesorios", href: "/productos?categoria=accesorios" },
 ];
 
-const linkBase = "label py-2 transition";
-
 // Encabezado fijo arriba: categorías a la izquierda, logo al centro, distribuidor a la derecha.
 export default function TopBar() {
   return (
     <div className="absolute inset-x-0 top-0 z-30">
-      <div className="grid h-[76px] grid-cols-[1fr_auto_1fr] items-center px-5 text-white sm:px-8">
+      <div className="grid h-[92px] grid-cols-[1fr_auto_1fr] items-center px-5 text-white sm:px-8">
       {/* Menú escritorio */}
-      <nav className="hidden items-center gap-8 lg:flex" aria-label="Categorías">
+      <nav className="hidden items-center gap-10 lg:flex" aria-label="Categorías">
         {menu.map((m) => (
-          <Link key={m.href} href={m.href} className={`${linkBase} text-white/85 hover:text-brand`}>
+          <Link
+            key={m.href}
+            href={m.href}
+            className="py-2 text-[15px] font-extrabold uppercase tracking-[0.12em] text-white transition hover:text-brand"
+          >
             {m.label}
           </Link>
         ))}
@@ -38,7 +40,7 @@ export default function TopBar() {
           aria-label="Categorías"
         >
           {menu.map((m) => (
-            <Link key={m.href} href={m.href} className={`${linkBase} py-3 text-fg/85 hover:text-brand`}>
+            <Link key={m.href} href={m.href} className="py-3 text-base font-extrabold uppercase tracking-[0.1em] text-fg transition hover:text-brand">
               {m.label}
             </Link>
           ))}
@@ -46,12 +48,12 @@ export default function TopBar() {
       </details>
 
       <Link href="/" aria-label="Fredmotos, ir al inicio">
-        <Image src={logo} alt="Fredmotos" className="h-9 w-auto sm:h-11" loading="eager" />
+        <Image src={logo} alt="Fredmotos" className="h-11 w-auto sm:h-16" loading="eager" />
       </Link>
 
       <a
         href="#distribuidores"
-        className="justify-self-end border px-3 py-2 text-[11px] font-bold uppercase tracking-wider transition border-white/60 text-white hover:border-brand hover:bg-brand hover:text-white sm:px-5 sm:py-2.5 sm:text-xs"
+        className="justify-self-end border px-3 py-2 text-[11px] font-extrabold uppercase tracking-wider transition border-white/60 text-white hover:border-brand hover:bg-brand hover:text-white sm:px-5 sm:py-3 sm:text-sm"
       >
         <span className="sm:hidden">¿Distribuidor?</span>
         <span className="hidden sm:inline">¿Quieres ser distribuidor?</span>
