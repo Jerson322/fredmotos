@@ -215,13 +215,21 @@ body {
   }
 }
 
-/* Fondo de la vitrina: difuminado blanco, rojo y negro con degradados fijos
-   (no usa blur ni animación, así el scroll va fluido) */
+/* Fondo de la vitrina: degradado rojo y negro, difuminado a blanco en los bordes
+   (degradados fijos: no usa blur ni animación, así el scroll va fluido) */
 .showcase-bg {
   background-color: #fff;
   background-image:
-    radial-gradient(60% 75% at 92% 2%, rgba(227, 6, 19, 0.55), transparent 70%),
-    radial-gradient(40% 55% at 78% 98%, rgba(227, 6, 19, 0.38), transparent 70%),
-    radial-gradient(30% 40% at 4% 22%, rgba(227, 6, 19, 0.22), transparent 70%),
-    radial-gradient(60% 75% at 0% 100%, rgba(14, 14, 14, 0.6), transparent 70%);
+    radial-gradient(ellipse 78% 72% at 50% 50%, transparent 40%, #fff 100%),
+    radial-gradient(50% 65% at 80% 42%, rgba(227, 6, 19, 0.72), transparent 75%),
+    radial-gradient(50% 65% at 20% 62%, rgba(14, 14, 14, 0.62), transparent 75%),
+    radial-gradient(40% 45% at 55% 12%, rgba(227, 6, 19, 0.3), transparent 70%);
+}
+
+/* Isla dinámica del encabezado */
+.island {
+  background:
+    radial-gradient(60% 140% at 85% 0%, rgba(227, 6, 19, 0.45), transparent 70%),
+    radial-gradient(40% 120% at 10% 100%, rgba(227, 6, 19, 0.18), transparent 70%),
+    #0e0e0e;
 }

@@ -9,26 +9,22 @@ const links = [
   { href: "/contacto", label: "Contacto" },
 ];
 
-const linkClass = "label py-2 text-fg/80 transition hover:text-brand";
-// Dentro de la isla (fondo negro) el menú pasa a blanco
-const islandText = "[[data-island]_&]:text-white/85 [[data-island]_&]:hover:text-brand";
-// Margen lateral: de pantalla completa (20px) al borde interno de la isla
-const barStyle = {
-  paddingInline: "calc((1 - var(--h, 0)) * 20px + var(--h, 0) * (50vw - min(47vw, 500px) + 22px))",
-  paddingTop: "calc(var(--h, 0) * 12px)",
-  height: "calc((1 - var(--h, 0)) * 96px + var(--h, 0) * 80px)",
-};
+const linkBase = "label py-2 transition";
+const linkClass = `${linkBase} text-fg/80 hover:text-brand`; // enlaces dentro de paneles blancos
+const islandText = "text-white/85 hover:text-brand";
 
 // Barra superior transparente: menú a la izquierda, logo al centro, distribuidor a la derecha.
 export default async function TopBar() {
   const categories = (await getCategories()).slice(0, 10);
 
   return (
-    <div className="absolute inset-x-0 top-0 z-30 grid grid-cols-[1fr_auto_1fr] items-center" style={barStyle}>
+    // Isla dinámica: píldora negra flotante con brillo rojo, fija arriba
+    <div className="absolute inset-x-0 top-3 z-30 px-[3vw]">
+      <div className="island mx-auto grid h-[68px] max-w-[1000px] grid-cols-[1fr_auto_1fr] items-center rounded-full px-4 text-white shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)] sm:px-6">
       {/* Menú escritorio */}
       <nav className="hidden items-center gap-7 lg:flex" aria-label="Principal">
         <div className="group relative">
-          <Link href="/productos" className={`${linkClass} ${islandText} flex items-center gap-1.5`} aria-haspopup="true">
+          <Link href="/productos" className={`${linkBase} ${islandText} flex items-center gap-1.5`} aria-haspopup="true">
             Categorías
             <span className="text-[9px] transition group-hover:rotate-180" aria-hidden="true">▼</span>
           </Link>
@@ -54,7 +50,7 @@ export default async function TopBar() {
           </div>
         </div>
         {links.map((l) => (
-          <Link key={l.href} href={l.href} className={`${linkClass} ${islandText}`}>
+          <Link key={l.href} href={l.href} className={`${linkBase} ${islandText}`}>
             {l.label}
           </Link>
         ))}
@@ -62,7 +58,7 @@ export default async function TopBar() {
 
       {/* Menú celular */}
       <details className="group relative lg:hidden">
-        <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center border border-fg transition-colors [[data-island]_&]:border-white/60 [[data-island]_&]:text-white [&::-webkit-details-marker]:hidden" aria-label="Abrir menú">
+        <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center border transition-colors border-white/60 text-white [&::-webkit-details-marker]:hidden" aria-label="Abrir menú">
           <span className="text-lg leading-none group-open:hidden">☰</span>
           <span className="hidden text-lg leading-none group-open:inline">✕</span>
         </summary>
@@ -88,19 +84,19 @@ export default async function TopBar() {
       </details>
 
       <Link href="/" aria-label="Fredmotos, ir al inicio">
-        <Image src={logo} alt="Fredmotos" className="h-10 w-auto brightness-0 transition-[filter] [[data-island]_&]:invert sm:h-14"
-          style={{ transform: "scale(calc(1 - var(--h, 0) * 0.22))" }}
+        <Image src={logo} alt="Fredmotos" className="h-9 w-auto brightness-0 invert sm:h-11"
           loading="eager"
         />
       </Link>
 
       <a
         href="#distribuidores"
-        className="justify-self-end border border-fg px-3 py-2 text-[11px] font-bold uppercase tracking-wider transition [[data-island]_&]:border-white/60 [[data-island]_&]:text-white hover:border-brand hover:bg-brand hover:text-white sm:px-5 sm:py-2.5 sm:text-xs"
+        className="justify-self-end border px-3 py-2 text-[11px] font-bold uppercase tracking-wider transition border-white/60 text-white hover:border-brand hover:bg-brand hover:text-white sm:px-5 sm:py-2.5 sm:text-xs"
       >
         <span className="sm:hidden">¿Distribuidor?</span>
         <span className="hidden sm:inline">¿Quieres ser distribuidor?</span>
       </a>
+      </div>
     </div>
   );
 }

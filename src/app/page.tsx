@@ -8,7 +8,7 @@ import { whatsappLink } from "@/lib/site";
 const media: Media[] = [
   {
     kind: "model",
-    src: "/models/Meshy_AI_Racing_Helmet_3D_1118204508_image-to-3d-texture.glb",
+    src: "/models/casco.glb",
     alt: "Casco HJC RPHA Funky Diablo en 3D",
   },
   { kind: "model", src: "/models/chaqueta.glb", alt: "Chaqueta para moto en 3D" },
