@@ -9,7 +9,7 @@ export default async function CarouselAdmin() {
   const supabase = await createAdminClient();
   const { data, error } = await supabase
     .from("hero_slides")
-    .select("id, brand, name, model_url, active, position")
+    .select("*")
     .order("position");
   const slides = (data ?? []) as SlideData[];
 
@@ -17,7 +17,7 @@ export default async function CarouselAdmin() {
     <>
       <h1 className="font-display text-3xl italic">Carrusel del inicio</h1>
       <p className="mt-2 max-w-2xl text-mute">
-        Son los productos 3D que rotan al abrir la página, con su nombre gigante detrás. Cambian solos cada pocos
+        Son los productos (modelos 3D o imágenes) que rotan al abrir la página, con su nombre gigante detrás. Cambian solos cada pocos
         segundos, en el orden de esta lista.
       </p>
 

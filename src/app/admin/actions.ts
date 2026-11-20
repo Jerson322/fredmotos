@@ -42,6 +42,7 @@ export async function createSlide(_prev: FormState, form: FormData): Promise<For
   const name = text(form, "name");
   const brand = text(form, "brand");
   const modelUrl = text(form, "model_url");
+  const mediaType = text(form, "media_type") === "image" ? "image" : "model";
   if (!name) return { error: "Falta el nombre del producto." };
   if (!modelUrl) return { error: "Falta el modelo 3D." };
 
@@ -54,8 +55,20 @@ export async function createSlide(_prev: FormState, form: FormData): Promise<For
     .maybeSingle();
   const { error } = await supabase
     .from("hero_slides")
-    .insert({ name, brand, model_url: modelUrl, position: (last?.position ?? -1) + 1 });
-  if (error) return { error: `No se pudo guardar: ${error.message}` };
+    // media_type solo se envía para imágenes: así los modelos funcionan aunque falte la migración 0003
+    .insert({
+      name,
+      brand,
+      model_url: modelUrl,
+      position: (last?.position ?? -1) + 1,
+      ...(mediaType === "image" ? { media_type: "image" } : {}),
+    });
+  if (error) {
+    if (mediaType === "image" && /media_type/.test(error.message)) {
+      return { error: "Para usar imágenes falta ejecutar la migración 0003_carrusel_imagenes.sql en Supabase." };
+    }
+    return { error: `No se pudo guardar: ${error.message}` };
+  }
 
   updateTag(HERO_TAG);
   return { ok: "Diapositiva agregada." };

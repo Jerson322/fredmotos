@@ -43,52 +43,70 @@ export default function NewSlideForm() {
 
     if (source === "upload") {
       const file = form.get("file");
-      if (!(file instanceof File) || file.size === 0) return setUploadError("Elige el archivo .glb del modelo.");
-      if (!file.name.toLowerCase().endsWith(".glb")) return setUploadError("El modelo debe ser un archivo .glb.");
+      if (!(file instanceof File) || file.size === 0) return setUploadError("Elige el modelo 3D (.glb) o la imagen.");
+      const name = file.name.toLowerCase();
+      const isModel = name.endsWith(".glb");
+      const isImage = /\.(jpe?g|png|webp)$/.test(name) || /^image\/(jpeg|png|webp)$/.test(file.type);
+      if (!isModel && !isImage) return setUploadError("El archivo debe ser un modelo .glb o una imagen JPG, PNG o WebP.");
       const mb = file.size / 1024 / 1024;
       if (mb > MAX_INPUT_MB) return setUploadError(`El archivo pesa ${mb.toFixed(0)} MB; el máximo es ${MAX_INPUT_MB} MB.`);
 
       startUpload(async () => {
-        // 1) Comprimir automáticamente en el navegador
+        // 1) Optimizar automáticamente en el navegador
         let upload: Blob = file;
-        if (mb > COMPRESS_FROM_MB) {
-          try {
+        let type = "model/gltf-binary";
+        let ext = "glb";
+        try {
+          if (isModel && mb > COMPRESS_FROM_MB) {
             const { compressGlb } = await import("@/lib/compress-glb");
             upload = await compressGlb(file, (step) => setStatus(stepText[step]));
             if (upload.size >= file.size) upload = file; // por si no se pudo reducir
             setReport(`Modelo optimizado: ${fmtMb(file.size)} → ${fmtMb(upload.size)}`);
-          } catch (err) {
-            console.error(err);
-            setStatus(undefined);
-            setUploadError("No se pudo optimizar este modelo. Revisa que sea un .glb válido o pásaselo a soporte.");
-            return;
+          } else if (isImage) {
+            setStatus("Optimizando la imagen…");
+            const { compressImage } = await import("@/lib/compress-image");
+            upload = await compressImage(file);
+            type = upload.type;
+            ext = type === "image/webp" ? "webp" : "jpg";
+            setReport(`Imagen optimizada: ${fmtMb(file.size)} → ${fmtMb(upload.size)}`);
           }
+        } catch (err) {
+          console.error(err);
+          setStatus(undefined);
+          setUploadError(
+            isModel
+              ? "No se pudo optimizar este modelo. Revisa que sea un .glb válido."
+              : "No se pudo leer esta imagen. Prueba con otra en JPG o PNG.",
+          );
+          return;
         }
         if (upload.size / 1024 / 1024 > MAX_MB) {
           setStatus(undefined);
-          setUploadError(`Aun comprimido pesa ${fmtMb(upload.size)}; el máximo es ${MAX_MB} MB.`);
+          setUploadError(`Aun optimizado pesa ${fmtMb(upload.size)}; el máximo es ${MAX_MB} MB.`);
           return;
         }
 
         // 2) Subir a Supabase Storage
         setStatus("Subiendo…");
         const supabase = createBrowserSupabase();
-        const path = `${crypto.randomUUID()}.glb`;
+        const path = `${crypto.randomUUID()}.${ext}`;
         const { error } = await supabase.storage
           .from("modelos")
           // El navegador suele marcar los .glb como "application/octet-stream"; Supabase solo
-          // acepta "model/gltf-binary", así que se re-etiqueta siempre antes de subir.
-          .upload(path, new Blob([upload], { type: "model/gltf-binary" }), {
-            contentType: "model/gltf-binary",
-            cacheControl: "31536000",
-          });
+          // acepta tipos concretos, así que se re-etiqueta siempre antes de subir.
+          .upload(path, new Blob([upload], { type }), { contentType: type, cacheControl: "31536000" });
         setStatus(undefined);
         if (error) {
-          setUploadError(`No se pudo subir el modelo: ${error.message}`);
+          setUploadError(
+            isImage && /mime type/i.test(error.message)
+              ? "Para subir imágenes falta ejecutar la migración 0003_carrusel_imagenes.sql en Supabase."
+              : `No se pudo subir el archivo: ${error.message}`,
+          );
           return;
         }
         const { data } = supabase.storage.from("modelos").getPublicUrl(path);
         form.set("model_url", data.publicUrl);
+        form.set("media_type", isImage ? "image" : "model");
         form.delete("file");
         action(form);
         formRef.current?.reset();
@@ -116,10 +134,10 @@ export default function NewSlideForm() {
       </div>
 
       <fieldset>
-        <legend className="label text-mute">Modelo 3D</legend>
+        <legend className="label text-mute">Modelo 3D o imagen</legend>
         <div className="mt-2 flex gap-2 text-sm">
           <SourceTab active={source === "upload"} onClick={() => setSource("upload")}>
-            Subir archivo .glb
+            Subir archivo
           </SourceTab>
           <SourceTab active={source === "local"} onClick={() => setSource("local")}>
             Usar uno de la página
@@ -130,11 +148,12 @@ export default function NewSlideForm() {
             <input
               name="file"
               type="file"
-              accept=".glb,model/gltf-binary"
+              accept=".glb,model/gltf-binary,image/jpeg,image/png,image/webp"
               className="mt-3 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-ink file:px-4 file:py-2 file:font-bold file:text-white hover:file:bg-brand"
             />
             <p className="mt-2 text-xs text-mute">
-              Formato .glb. Si pesa mucho no importa: se optimiza solo antes de subirlo para que la página cargue rápido.
+              Modelo 3D (.glb) o imagen (JPG, PNG o WebP). Si pesa mucho no importa: se optimiza solo antes de subirlo
+              para que la página cargue rápido. Para imágenes, lo ideal es el producto sobre fondo transparente (PNG).
             </p>
           </>
         ) : (

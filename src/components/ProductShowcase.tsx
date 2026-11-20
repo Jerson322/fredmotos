@@ -30,7 +30,7 @@ export type Panel = {
   word: string; // palabra gigante de fondo
 };
 
-export type Slide = { id: string; brand: string; name: string; modelUrl: string };
+export type Slide = { id: string; brand: string; name: string; modelUrl: string; mediaType: "model" | "image" };
 
 type Props = {
   slides: Slide[]; // carrusel del inicio (modelos 3D)
@@ -71,7 +71,11 @@ export default function ProductShowcase({ slides, media: panelMedia, panels, anc
   // Lista única de medios: primero las diapositivas, luego los de la vitrina
   const media = useMemo<Media[]>(
     () => [
-      ...slides.map((sl) => ({ kind: "model" as const, src: sl.modelUrl, alt: `${sl.brand} ${sl.name} en 3D` })),
+      ...slides.map((sl): Media =>
+        sl.mediaType === "image"
+          ? { kind: "image", src: sl.modelUrl, alt: `${sl.brand} ${sl.name}`.trim() }
+          : { kind: "model", src: sl.modelUrl, alt: `${sl.brand} ${sl.name} en 3D` },
+      ),
       ...panelMedia,
     ],
     [slides, panelMedia],

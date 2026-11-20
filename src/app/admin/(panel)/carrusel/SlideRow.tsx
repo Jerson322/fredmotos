@@ -10,12 +10,14 @@ export type SlideData = {
   model_url: string;
   active: boolean;
   position: number;
+  media_type?: "model" | "image"; // no existe hasta ejecutar la migración 0003
 };
 
 export default function SlideRow({ slide, first, last }: { slide: SlideData; first: boolean; last: boolean }) {
   const [state, save, saving] = useActionState(updateSlide, undefined);
   const [busy, start] = useTransition();
   const file = decodeURIComponent(slide.model_url.split("/").pop() ?? "");
+  const isImage = slide.media_type === "image";
 
   return (
     <li className={`rounded-2xl border bg-card p-4 sm:p-5 ${slide.active ? "border-line" : "border-dashed border-line opacity-60"}`}>
@@ -32,7 +34,7 @@ export default function SlideRow({ slide, first, last }: { slide: SlideData; fir
 
       <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-3 text-sm">
         <a href={slide.model_url} target="_blank" rel="noopener noreferrer" className="mr-auto truncate text-mute hover:text-brand">
-          Modelo: {file}
+          {isImage ? "Imagen" : "Modelo 3D"}: {file}
         </a>
         <RowButton disabled={busy || first} onClick={() => start(() => moveSlide(slide.id, "up"))}>
           ↑ Subir

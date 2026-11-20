@@ -10,12 +10,13 @@ export type HeroSlide = {
   id: string;
   brand: string;
   name: string;
-  modelUrl: string;
+  modelUrl: string; // URL del .glb o de la imagen
+  mediaType: "model" | "image";
 };
 
 // Si aún no hay diapositivas en Supabase, se muestra el casco que ya está en el proyecto.
 const fallbackSlides: HeroSlide[] = [
-  { id: "local-casco", brand: "HJC RPHA", name: "Funky Diablo", modelUrl: "/models/casco.glb" },
+  { id: "local-casco", brand: "HJC RPHA", name: "Funky Diablo", modelUrl: "/models/casco.glb", mediaType: "model" },
 ];
 
 export async function getHeroSlides(): Promise<HeroSlide[]> {
@@ -26,7 +27,7 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
   if (!supabase) return fallbackSlides;
   const { data, error } = await supabase
     .from("hero_slides")
-    .select("id, brand, name, model_url")
+    .select("*")
     .eq("active", true)
     .order("position", { ascending: true });
   if (error) {
@@ -34,7 +35,13 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
     return fallbackSlides;
   }
   if (!data?.length) return fallbackSlides;
-  return data.map((s) => ({ id: s.id, brand: s.brand ?? "", name: s.name, modelUrl: s.model_url }));
+  return data.map((s) => ({
+    id: s.id,
+    brand: s.brand ?? "",
+    name: s.name,
+    modelUrl: s.model_url,
+    mediaType: s.media_type === "image" ? "image" : "model",
+  }));
 }
 
 export async function getSettings(): Promise<Settings> {
