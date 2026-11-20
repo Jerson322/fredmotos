@@ -162,12 +162,12 @@ body {
   }
 }
 .text-shine {
-  /* blanco translúcido sobre el fondo oscuro; el brillo es una franja roja */
+  /* blanco sobre el fondo oscuro; el brillo es una franja roja */
   background-image: linear-gradient(
     105deg,
-    rgba(255, 255, 255, 0.09) 38%,
-    rgba(227, 6, 19, 0.6) 50%,
-    rgba(255, 255, 255, 0.09) 62%
+    #ffffff 38%,
+    rgba(227, 6, 19, 0.85) 50%,
+    #ffffff 62%
   );
   background-size: 250% 100%;
   background-position: 150% 0;
@@ -225,10 +225,24 @@ body {
     radial-gradient(ellipse 90% 80% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.6) 100%);
 }
 
-/* Isla dinámica del encabezado */
+/* Isla dinámica del encabezado: transparente arriba; al bajar aparece el fondo oscuro */
 .island {
+  position: relative;
+  isolation: isolate;
+}
+.island::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
   background:
     radial-gradient(60% 140% at 85% 0%, rgba(227, 6, 19, 0.45), transparent 70%),
     radial-gradient(40% 120% at 10% 100%, rgba(227, 6, 19, 0.18), transparent 70%),
     #0e0e0e;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+[data-scrolled] .island::before {
+  opacity: 1;
 }

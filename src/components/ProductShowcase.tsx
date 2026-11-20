@@ -165,15 +165,18 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
       style={{ height: `calc(${N * STAGE_SVH}svh + 100svh)`, "--h": 0 } as React.CSSProperties}
     >
       <div className="showcase-bg sticky top-0 h-svh overflow-hidden text-white">
-        {/* Palabras gigantes de fondo por categoría */}
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center select-none" aria-hidden="true">
+        {/* Palabras gigantes de fondo por categoría (en escritorio abajo, para no tapar el texto) */}
+        <div
+          className="pointer-events-none absolute inset-0 flex items-center justify-center select-none lg:items-end lg:pb-[2svh]"
+          aria-hidden="true"
+        >
           {panels.map((panel, j) => (
             <span
               key={panel.word}
               ref={(el) => {
                 wordRefs.current[j] = el;
               }}
-              className="font-display absolute whitespace-nowrap text-[18vw] italic leading-none text-white/[0.06] opacity-0"
+              className="font-display absolute whitespace-nowrap text-[18vw] italic leading-[0.8] text-white opacity-0"
             >
               {panel.word}
             </span>
