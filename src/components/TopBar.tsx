@@ -1,57 +1,28 @@
 import Image from "next/image";
 import Link from "next/link";
 import logo from "../../public/brand/logo-blanco.svg";
-import { getCategories } from "@/lib/products";
 
-const links = [
-  { href: "/productos", label: "Tienda" },
-  { href: "/nosotros", label: "Nosotros" },
-  { href: "/contacto", label: "Contacto" },
+// Menú principal: categorías de la tienda. El enlace usa el grupo de Ágil convertido a
+// "slug" (ej. grupo "INDUMENTARIA" → categoria=indumentaria). Si en Ágil se llaman distinto,
+// se ajusta aquí.
+const menu = [
+  { label: "Cascos", href: "/productos?categoria=cascos" },
+  { label: "Indumentaria", href: "/productos?categoria=indumentaria" },
+  { label: "Accesorios", href: "/productos?categoria=accesorios" },
 ];
 
 const linkBase = "label py-2 transition";
-const linkClass = `${linkBase} text-fg/80 hover:text-brand`; // enlaces dentro de paneles blancos
-const topText = "text-white/85 hover:text-brand";
 
-// Barra superior transparente: menú a la izquierda, logo al centro, distribuidor a la derecha.
-export default async function TopBar() {
-  const categories = (await getCategories()).slice(0, 10);
-
+// Encabezado fijo arriba: categorías a la izquierda, logo al centro, distribuidor a la derecha.
+export default function TopBar() {
   return (
-    // Encabezado fijo arriba: menú a la izquierda, logo al centro, distribuidor a la derecha.
     <div className="absolute inset-x-0 top-0 z-30">
       <div className="grid h-[76px] grid-cols-[1fr_auto_1fr] items-center px-5 text-white sm:px-8">
       {/* Menú escritorio */}
-      <nav className="hidden items-center gap-7 lg:flex" aria-label="Principal">
-        <div className="group relative">
-          <Link href="/productos" className={`${linkBase} ${topText} flex items-center gap-1.5`} aria-haspopup="true">
-            Categorías
-            <span className="text-[9px] transition group-hover:rotate-180" aria-hidden="true">▼</span>
-          </Link>
-          <div className="invisible absolute left-0 top-full pt-3 opacity-0 transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
-            <ul className="min-w-56 border-t-2 text-fg border-brand bg-white py-2 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)]">
-              {categories.map((c) => (
-                <li key={c.slug}>
-                  <Link
-                    href={`/productos?categoria=${c.slug}`}
-                    className="flex justify-between gap-4 px-5 py-2.5 text-sm hover:bg-paper hover:text-brand"
-                  >
-                    {c.name}
-                    <span className="text-xs text-mute">{c.count}</span>
-                  </Link>
-                </li>
-              ))}
-              <li className="mt-1 border-t border-line">
-                <Link href="/productos" className="block px-5 py-2.5 text-sm font-bold hover:text-brand">
-                  Ver toda la tienda →
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-        {links.map((l) => (
-          <Link key={l.href} href={l.href} className={`${linkBase} ${topText}`}>
-            {l.label}
+      <nav className="hidden items-center gap-8 lg:flex" aria-label="Categorías">
+        {menu.map((m) => (
+          <Link key={m.href} href={m.href} className={`${linkBase} text-white/85 hover:text-brand`}>
+            {m.label}
           </Link>
         ))}
       </nav>
@@ -62,31 +33,20 @@ export default async function TopBar() {
           <span className="text-lg leading-none group-open:hidden">☰</span>
           <span className="hidden text-lg leading-none group-open:inline">✕</span>
         </summary>
-        <div className="absolute left-0 top-full mt-3 w-[min(80vw,20rem)] border-t-2 border-brand bg-white p-5 text-fg shadow-[0_20px_40px_-15px_rgba(0,0,0,0.35)]">
-          <p className="label text-mute">Categorías</p>
-          <ul className="mt-2 grid grid-cols-2 gap-x-4">
-            {categories.map((c) => (
-              <li key={c.slug}>
-                <Link href={`/productos?categoria=${c.slug}`} className="block py-2 text-sm hover:text-brand">
-                  {c.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 flex flex-col border-t border-line pt-3">
-            {links.map((l) => (
-              <Link key={l.href} href={l.href} className={linkClass}>
-                {l.label}
-              </Link>
-            ))}
-          </div>
-        </div>
+        <nav
+          className="absolute left-0 top-full mt-3 flex w-[min(80vw,16rem)] flex-col border-t-2 border-brand bg-white p-4 text-fg shadow-[0_20px_40px_-15px_rgba(0,0,0,0.35)]"
+          aria-label="Categorías"
+        >
+          {menu.map((m) => (
+            <Link key={m.href} href={m.href} className={`${linkBase} py-3 text-fg/85 hover:text-brand`}>
+              {m.label}
+            </Link>
+          ))}
+        </nav>
       </details>
 
       <Link href="/" aria-label="Fredmotos, ir al inicio">
-        <Image src={logo} alt="Fredmotos" className="h-9 w-auto sm:h-11"
-          loading="eager"
-        />
+        <Image src={logo} alt="Fredmotos" className="h-9 w-auto sm:h-11" loading="eager" />
       </Link>
 
       <a
