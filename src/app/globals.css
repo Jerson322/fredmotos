@@ -220,8 +220,8 @@ body {
 .showcase-bg {
   background-color: #fff;
   background-image:
-    radial-gradient(60vw 60vw at 92% 2%, rgba(227, 6, 19, 0.55), transparent 70%),
-    radial-gradient(40vw 40vw at 78% 98%, rgba(227, 6, 19, 0.38), transparent 70%),
-    radial-gradient(30vw 30vw at 4% 22%, rgba(227, 6, 19, 0.22), transparent 70%),
-    radial-gradient(60vw 60vw at 0% 100%, rgba(14, 14, 14, 0.6), transparent 70%);
+    radial-gradient(60% 75% at 92% 2%, rgba(227, 6, 19, 0.55), transparent 70%),
+    radial-gradient(40% 55% at 78% 98%, rgba(227, 6, 19, 0.38), transparent 70%),
+    radial-gradient(30% 40% at 4% 22%, rgba(227, 6, 19, 0.22), transparent 70%),
+    radial-gradient(60% 75% at 0% 100%, rgba(14, 14, 14, 0.6), transparent 70%);
 }

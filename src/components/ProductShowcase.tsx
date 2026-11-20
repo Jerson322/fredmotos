@@ -38,7 +38,9 @@ type Props = {
   children?: React.ReactNode; // barra superior (logo + botón)
 };
 
-const STAGE_SVH = 90; // scroll que dura cada etapa
+const STAGE_SVH = 90;
+// Tamaño final de la "isla dinámica" (encabezado flotante)
+export const ISLAND = { top: 12, height: 68, maxWidth: 1000 }; // scroll que dura cada etapa
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const smooth = (x: number) => {
   x = clamp(x);
@@ -48,6 +50,7 @@ const smooth = (x: number) => {
 export default function ProductShowcase({ media, panels, hero, anchorId, children }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
   const mediaRefs = useRef<(HTMLDivElement | null)[]>([]);
   const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -70,7 +73,22 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
       const x = smooth((T - k - 0.15) / 0.7); // 0→1 dentro de cada tramo, con pausa en los extremos
       const s = k + x;
 
-      stage.style.setProperty("--h", clamp(s).toFixed(4));
+      const h = clamp(s);
+      stage.style.setProperty("--h", h.toFixed(4));
+
+      // El fondo de color se comprime hasta quedar como "isla dinámica" en el encabezado
+      const bg = bgRef.current;
+      if (bg) {
+        const W = window.innerWidth;
+        const H = window.innerHeight;
+        const iw = Math.min(W * 0.94, ISLAND.maxWidth);
+        bg.style.top = `${(ISLAND.top * h).toFixed(1)}px`;
+        bg.style.left = `${(((W - iw) / 2) * h).toFixed(1)}px`;
+        bg.style.width = `${(W + (iw - W) * h).toFixed(1)}px`;
+        bg.style.height = `${(H + (ISLAND.height - H) * h).toFixed(1)}px`;
+        bg.style.borderRadius = `${(ISLAND.height / 2) * h}px`;
+      }
+      stage.toggleAttribute("data-island", h > 0.6);
       if (heroRef.current) heroRef.current.style.opacity = String(clamp(1 - s * 3));
 
       // Transformación de la imagen: la actual se encoge y se va, la siguiente crece desde el centro
@@ -147,7 +165,16 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
       className="relative"
       style={{ height: `calc(${N * STAGE_SVH}svh + 100svh)`, "--h": 0 } as React.CSSProperties}
     >
-      <div className="showcase-bg sticky top-0 h-svh overflow-hidden text-fg">
+      <div className="sticky top-0 h-svh overflow-hidden bg-white text-fg">
+        {/* Fondo de color: al bajar se encoge hasta ser la isla del encabezado */}
+        <div
+          ref={bgRef}
+          className="showcase-bg pointer-events-none absolute left-0 top-0 z-0 h-svh w-full overflow-hidden shadow-[0_18px_40px_-18px_rgba(0,0,0,0.55)]"
+          aria-hidden="true"
+        >
+          {/* Se oscurece al volverse isla para que el menú se lea en blanco */}
+          <div className="absolute inset-0 bg-ink" style={{ opacity: "calc(var(--h) * 0.7)" }} />
+        </div>
         {/* Palabras gigantes de fondo por categoría */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center select-none" aria-hidden="true">
           {panels.map((panel, j) => (
