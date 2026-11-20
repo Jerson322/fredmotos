@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import logo from "../../public/brand/logo-blanco.svg";
 import { getCategories } from "@/lib/products";
-import IslandShell from "./IslandShell";
 
 const links = [
   { href: "/productos", label: "Tienda" },
@@ -12,20 +11,20 @@ const links = [
 
 const linkBase = "label py-2 transition";
 const linkClass = `${linkBase} text-fg/80 hover:text-brand`; // enlaces dentro de paneles blancos
-const islandText = "text-white/85 hover:text-brand";
+const topText = "text-white/85 hover:text-brand";
 
 // Barra superior transparente: menú a la izquierda, logo al centro, distribuidor a la derecha.
 export default async function TopBar() {
   const categories = (await getCategories()).slice(0, 10);
 
   return (
-    // Arriba: barra normal de lado a lado. Al bajar: isla dinámica flotante.
-    <IslandShell>
-      <div className="island mx-auto grid h-[76px] max-w-full grid-cols-[1fr_auto_1fr] items-center rounded-none border border-transparent px-5 text-white transition-all duration-500 ease-[cubic-bezier(.2,.8,.2,1)] sm:px-8 group-data-[scrolled]/island:h-[64px] group-data-[scrolled]/island:max-w-[1000px] group-data-[scrolled]/island:rounded-[32px] group-data-[scrolled]/island:border group-data-[scrolled]/island:border-white/15 group-data-[scrolled]/island:px-4 group-data-[scrolled]/island:shadow-[0_18px_40px_-18px_rgba(0,0,0,0.7)] sm:group-data-[scrolled]/island:px-6">
+    // Encabezado fijo arriba: menú a la izquierda, logo al centro, distribuidor a la derecha.
+    <div className="absolute inset-x-0 top-0 z-30">
+      <div className="grid h-[76px] grid-cols-[1fr_auto_1fr] items-center px-5 text-white sm:px-8">
       {/* Menú escritorio */}
       <nav className="hidden items-center gap-7 lg:flex" aria-label="Principal">
         <div className="group relative">
-          <Link href="/productos" className={`${linkBase} ${islandText} flex items-center gap-1.5`} aria-haspopup="true">
+          <Link href="/productos" className={`${linkBase} ${topText} flex items-center gap-1.5`} aria-haspopup="true">
             Categorías
             <span className="text-[9px] transition group-hover:rotate-180" aria-hidden="true">▼</span>
           </Link>
@@ -51,7 +50,7 @@ export default async function TopBar() {
           </div>
         </div>
         {links.map((l) => (
-          <Link key={l.href} href={l.href} className={`${linkBase} ${islandText}`}>
+          <Link key={l.href} href={l.href} className={`${linkBase} ${topText}`}>
             {l.label}
           </Link>
         ))}
@@ -98,6 +97,6 @@ export default async function TopBar() {
         <span className="hidden sm:inline">¿Quieres ser distribuidor?</span>
       </a>
       </div>
-    </IslandShell>
+    </div>
   );
 }

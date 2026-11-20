@@ -224,25 +224,3 @@ body {
     radial-gradient(40% 50% at 85% 100%, rgba(184, 5, 15, 0.35), transparent 70%),
     radial-gradient(ellipse 90% 80% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.6) 100%);
 }
-
-/* Isla dinámica del encabezado: transparente arriba; al bajar aparece el fondo oscuro */
-.island {
-  position: relative;
-  isolation: isolate;
-}
-.island::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background:
-    radial-gradient(60% 140% at 85% 0%, rgba(227, 6, 19, 0.45), transparent 70%),
-    radial-gradient(40% 120% at 10% 100%, rgba(227, 6, 19, 0.18), transparent 70%),
-    #0e0e0e;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-[data-scrolled] .island::before {
-  opacity: 1;
-}
