@@ -253,7 +253,7 @@ export default function ProductShowcase({ slides, media: panelMedia, panels, anc
       <div className="showcase-bg sticky top-0 h-svh overflow-hidden text-white">
         {/* Palabras gigantes de fondo por categoría (en escritorio abajo, para no tapar el texto) */}
         <div
-          className="pointer-events-none absolute inset-0 flex items-center justify-center select-none lg:items-end lg:pb-[2svh]"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center select-none lg:items-end lg:pb-[4svh]"
           aria-hidden="true"
         >
           {panels.map((panel, j) => (
@@ -262,7 +262,7 @@ export default function ProductShowcase({ slides, media: panelMedia, panels, anc
               ref={(el) => {
                 wordRefs.current[j] = el;
               }}
-              className="font-display absolute whitespace-nowrap text-[18vw] italic leading-[0.8] text-white opacity-0"
+              className="font-display text-outline absolute whitespace-nowrap text-[13vw] italic leading-[0.8] opacity-0 [-webkit-text-stroke:1.5px_rgba(255,255,255,0.35)] lg:text-[9vw]"
             >
               {panel.word}
             </span>
