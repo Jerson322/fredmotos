@@ -162,7 +162,13 @@ body {
   }
 }
 .text-shine {
-  background-image: linear-gradient(105deg, #ececec 35%, #cfcfcf 45%, #ffffff 50%, #cfcfcf 55%, #ececec 65%);
+  /* negro translúcido: se lee sobre blanco y sobre rojo; el brillo es una franja roja */
+  background-image: linear-gradient(
+    105deg,
+    rgba(14, 14, 14, 0.13) 38%,
+    rgba(227, 6, 19, 0.55) 50%,
+    rgba(14, 14, 14, 0.13) 62%
+  );
   background-size: 250% 100%;
   background-position: 150% 0;
   -webkit-background-clip: text;

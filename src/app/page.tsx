@@ -1,7 +1,6 @@
-import Image from "next/image";
+import TopBar from "@/components/TopBar";
 import ProductShowcase, { type Media, type Panel } from "@/components/ProductShowcase";
 import { whatsappLink } from "@/lib/site";
-import logo from "../../public/brand/logo-horizontal.webp";
 
 // Productos que se transforman al hacer scroll.
 // Para cambiar una silueta por la foto real: { kind: "image", src: "/vitrina/chaqueta.png", alt: "..." }
@@ -77,18 +76,7 @@ export default function Home() {
     <>
       <h1 className="sr-only">Fredmotos: cascos, chaquetas, guantes e impermeables para moto</h1>
       <ProductShowcase media={media} panels={panels} hero={{ brand: "HJC RPHA", name: "Funky Diablo" }} anchorId="distribuidores">
-        {/* Barra transparente: logo al centro, botón de distribuidor en la esquina */}
-        <div className="absolute inset-x-0 top-0 z-30 grid grid-cols-[1fr_auto_1fr] items-center px-4 py-5 sm:px-8">
-          <span />
-          <Image src={logo} alt="Fredmotos" className="h-10 w-auto brightness-0 sm:h-14" loading="eager" />
-          <a
-            href="#distribuidores"
-            className="justify-self-end border border-fg px-3 py-2 text-[11px] font-bold uppercase tracking-wider transition hover:border-brand hover:bg-brand hover:text-white sm:px-5 sm:py-2.5 sm:text-xs"
-          >
-            <span className="sm:hidden">¿Distribuidor?</span>
-            <span className="hidden sm:inline">¿Quieres ser distribuidor?</span>
-          </a>
-        </div>
+        <TopBar />
       </ProductShowcase>
     </>
   );

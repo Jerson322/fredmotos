@@ -156,7 +156,7 @@ export default function ProductShowcase({ media, panels, hero, anchorId, childre
               ref={(el) => {
                 wordRefs.current[j] = el;
               }}
-              className="font-display absolute whitespace-nowrap text-[18vw] italic leading-none text-white/70 opacity-0"
+              className="font-display absolute whitespace-nowrap text-[18vw] italic leading-none text-ink/[0.09] opacity-0"
             >
               {panel.word}
             </span>
